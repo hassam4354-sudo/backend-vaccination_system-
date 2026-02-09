@@ -125,7 +125,7 @@ $pending_count = mysqli_fetch_assoc($result_pending)['total'];
             <a href="dashboard.php">Dashboard</a>
             <a href="my_children.php">My Children</a>
             <a href="book_appointment.php">Book Appointment</a>
-            <a href="vaccination_history.php">History</a>
+            <a href="vaccinationhistory.php">Vaccination History</a>
             <a href="my_profile.php">Profile</a>
             <a href="../logout.php">Logout</a>
         </div>
