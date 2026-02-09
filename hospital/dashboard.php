@@ -11,7 +11,7 @@ $user_id = $_SESSION["user_id"];
 $query_hospital = "SELECT * FROM hospitals WHERE user_id = '$user_id'";
 $result_hospital = mysqli_query($connection, $query_hospital);
 $hospital_data = mysqli_fetch_assoc($result_hospital);
-$hospital_id = $hospital_data['hospital_id'];
+$hospital_id = $hospital_data['hospital_id'] ?? "";
 
 // Check if hospital is verified
 if($hospital_data['is_verified'] == 0) {

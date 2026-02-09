@@ -7,20 +7,52 @@ if(!isset($_SESSION["logged_in"]) || $_SESSION["user_type"] != "admin"){
 
 include("../dbconnection.php");
 
-// Get all pending appointment requests
-$query_requests = "SELECT ar.*, 
-                   c.full_name as child_name, c.date_of_birth,
-                   p.full_name as parent_name, p.emergency_contact as parent_phone,
-                   h.hospital_name, h.city,
-                   v.vaccine_name
-                   FROM appointment_requests ar
-                   JOIN children c ON ar.child_id = c.child_id
-                   JOIN parents p ON c.parent_id = p.parent_id
-                   JOIN hospitals h ON ar.hospital_id = h.hospital_id
-                   JOIN vaccines v ON ar.vaccine_id = v.vaccine_id
-                   WHERE ar.request_status = 'pending'
-                   ORDER BY ar.created_at DESC";
-$result_requests = mysqli_query($connection, $query_requests);
+// Debug: Check all tables
+echo "<h2>Database Debug Info</h2>";
+
+// Check appointment_requests
+echo "<h3>appointment_requests table:</h3>";
+$check_req = "SELECT * FROM appointment_requests";
+$result_req = mysqli_query($connection, $check_req);
+echo "<pre>";
+while($row = mysqli_fetch_assoc($result_req)){
+    print_r($row);
+}
+echo "</pre>";
+
+// Check children table
+echo "<h3>children table:</h3>";
+$check_child = "SELECT * FROM children";
+$result_child = mysqli_query($connection, $check_child);
+echo "<pre>";
+while($row = mysqli_fetch_assoc($result_child)){
+    print_r($row);
+}
+echo "</pre>";
+
+// Check the full query
+echo "<h3>Testing the main query:</h3>";
+$test_query = "SELECT ar.*, 
+               c.full_name as child_name,
+               p.full_name as parent_name,
+               h.hospital_name,
+               v.vaccine_name
+               FROM appointment_requests ar
+               LEFT JOIN children c ON ar.child_id = c.child_id
+               LEFT JOIN parents p ON c.parent_id = p.parent_id
+               LEFT JOIN hospitals h ON ar.hospital_id = h.hospital_id
+               LEFT JOIN vaccines v ON ar.vaccine_id = v.vaccine_id
+               WHERE ar.request_status = 'pending'";
+               
+$test_result = mysqli_query($connection, $test_query);
+echo "Number of rows: " . mysqli_num_rows($test_result) . "<br><br>";
+echo "<pre>";
+while($row = mysqli_fetch_assoc($test_result)){
+    print_r($row);
+}
+echo "</pre>";
+
+mysqli_close($connection);
 ?>
 <!DOCTYPE html>
 <html lang="en">

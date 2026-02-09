@@ -151,7 +151,7 @@ $result_hospitals = mysqli_query($connection, $query_hospitals);
                     <?php while($vaccine = mysqli_fetch_assoc($result_vaccines)): ?>
                     <option value="<?php echo $vaccine['vaccine_id']; ?>">
                         <?php echo $vaccine['vaccine_name']; ?> 
-                        (<?php echo $vaccine['vaccine_description']; ?>)
+                        (<?php echo $vaccine['description']; ?>)
                     </option>
                     <?php endwhile; ?>
                 </select>

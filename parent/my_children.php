@@ -11,7 +11,7 @@ $user_id = $_SESSION["user_id"];
 $query_parent = "SELECT * FROM parents WHERE user_id = '$user_id'";
 $result_parent = mysqli_query($connection, $query_parent);
 $parent_data = mysqli_fetch_assoc($result_parent);
-$parent_id = $parent_data['parent_id'];
+$parent_id = $parent_data['parent_id'] ?? "";
 
 // Get all children
 $query_children = "SELECT * FROM children WHERE parent_id = '$parent_id' ORDER BY date_of_birth DESC";
