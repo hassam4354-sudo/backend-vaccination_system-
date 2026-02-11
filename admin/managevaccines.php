@@ -162,7 +162,7 @@
 
         <div class="vaccine-card">
             <div class="vaccine-name">BCG</div>
-            <div class="vaccine-desc">BCG vaccine tuberculosis (TB) se bachاke liye di jati hai.</div>
+            <div class="vaccine-desc">BCG vaccine tuberculosis (TB) se bachاؤ ke liye di jati hai.</div>
         </div>
 
         <div class="vaccine-card">
