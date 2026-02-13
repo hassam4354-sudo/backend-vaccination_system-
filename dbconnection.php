@@ -45,4 +45,49 @@ function create_notification($user_id, $title, $message, $type = 'system', $rela
     
     return mysqli_query($connection, $query);
 }
+
+// Function to redirect with message (for booking page)
+function redirect_with_message($url, $message = null, $type = 'success') {
+    if ($message) {
+        $_SESSION['flash_message'] = $message;
+        $_SESSION['flash_type'] = $type;
+    }
+    header("Location: $url");
+    exit();
+}
+
+// Function to check admin login (for booking page)
+function check_admin_login() {
+    global $connection;
+    if (!isset($_SESSION['logged_in']) || $_SESSION['user_type'] != 'admin') {
+        header("Location: ../login.php");
+        exit();
+    }
+}
+
+// Function to get admin details (for booking page)
+function get_admin_details($connection) {
+    $user_id = $_SESSION['user_id'];
+    $query = "SELECT admin_id, full_name FROM admins WHERE user_id = '$user_id'";
+    $result = mysqli_query($connection, $query);
+    return mysqli_fetch_assoc($result);
+}
+
+// Function to get booking statistics (for booking page)
+function get_booking_statistics($connection) {
+    $query = "SELECT 
+                COUNT(DISTINCT vb.booking_id) as total_bookings,
+                SUM(CASE WHEN ar.request_status = 'pending' AND vb.booking_status = 'scheduled' THEN 1 ELSE 0 END) as pending_bookings,
+                SUM(CASE WHEN ar.request_status = 'approved' AND vb.booking_status = 'scheduled' THEN 1 ELSE 0 END) as approved_bookings,
+                SUM(CASE WHEN vb.booking_status = 'completed' THEN 1 ELSE 0 END) as completed_bookings,
+                SUM(CASE WHEN vb.booking_status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_bookings,
+                SUM(CASE WHEN vb.booking_status = 'missed' THEN 1 ELSE 0 END) as missed_bookings
+              FROM vaccination_bookings vb
+              INNER JOIN appointment_requests ar ON vb.request_id = ar.request_id";
+    
+    $result = mysqli_query($connection, $query);
+    return mysqli_fetch_assoc($result);
+}
+
+// booking
 ?>

@@ -733,7 +733,7 @@ while($row = mysqli_fetch_assoc($result_monthly)) {
                     <i class="fas fa-syringe"></i>
                     <span>Vaccines</span>
                 </a>
-                <a href="booking_details.php" class="nav-item">
+                <a href="bookingdetail.php" class="nav-item">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Bookings</span>
                 </a>
