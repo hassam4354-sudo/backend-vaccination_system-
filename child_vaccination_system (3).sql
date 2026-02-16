@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 04, 2026 at 06:13 AM
+-- Generation Time: Feb 16, 2026 at 05:37 AM
 -- Server version: 10.4.27-MariaDB
 -- PHP Version: 8.2.0
 
@@ -132,6 +132,32 @@ INSERT INTO `admins` (`admin_id`, `user_id`, `full_name`, `role`, `created_at`) 
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `appointments`
+--
+
+CREATE TABLE `appointments` (
+  `appointment_id` int(11) NOT NULL,
+  `child_id` int(11) NOT NULL,
+  `vaccine_id` int(11) NOT NULL,
+  `hospital_id` int(11) NOT NULL,
+  `doctor_id` int(11) NOT NULL,
+  `appointment_date` date NOT NULL,
+  `appointment_time` time NOT NULL,
+  `notes` text DEFAULT NULL,
+  `status` varchar(20) DEFAULT 'scheduled',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `appointments`
+--
+
+INSERT INTO `appointments` (`appointment_id`, `child_id`, `vaccine_id`, `hospital_id`, `doctor_id`, `appointment_date`, `appointment_time`, `notes`, `status`, `created_at`) VALUES
+(1, 2, 3, 2, 3, '2026-02-18', '14:00:00', '', 'scheduled', '2026-02-13 05:11:21');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `appointment_requests`
 --
 
@@ -151,6 +177,13 @@ CREATE TABLE `appointment_requests` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `appointment_requests`
+--
+
+INSERT INTO `appointment_requests` (`request_id`, `child_id`, `hospital_id`, `vaccine_id`, `dose_number`, `preferred_date`, `preferred_time`, `request_status`, `parent_notes`, `admin_notes`, `processed_by`, `processed_at`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 1, 1, '2026-02-20', '22:30:00', 'approved', 'Hurry', 'Approved by admin', 1, '2026-02-06 05:22:58', '2026-02-06 05:22:23', '2026-02-06 05:22:58');
 
 --
 -- Triggers `appointment_requests`
@@ -189,7 +222,62 @@ CREATE TABLE `audit_logs` (
 --
 
 INSERT INTO `audit_logs` (`log_id`, `user_id`, `action_type`, `table_name`, `record_id`, `action_description`, `ip_address`, `user_agent`, `created_at`) VALUES
-(1, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-04 05:05:19');
+(1, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-04 05:05:19'),
+(2, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 04:32:20'),
+(3, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:09:44'),
+(4, 1, 'VERIFY_HOSPITAL', 'hospitals', 1, 'Verified hospital ID: 1', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:09:53'),
+(5, 1, 'LOGOUT', 'users', 1, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:10:00'),
+(6, 2, 'LOGIN', 'users', 2, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:10:06'),
+(7, 3, 'LOGIN', 'users', 3, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:19:15'),
+(8, 3, 'ADD_CHILD', 'children', 1, 'Added child: Test Child', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:21:42'),
+(9, 3, 'APPOINTMENT_REQUEST', 'appointment_requests', 1, 'Submitted appointment request #1', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:22:23'),
+(10, 3, 'LOGOUT', 'users', 3, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:22:41'),
+(11, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:22:45'),
+(12, 1, 'APPROVE_REQUEST', 'appointment_requests', 1, 'Approved appointment request for child ID: 1', NULL, NULL, '2026-02-06 05:22:58'),
+(13, 1, 'LOGOUT', 'users', 1, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:23:02'),
+(14, 3, 'LOGIN', 'users', 3, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:23:13'),
+(15, 3, 'LOGOUT', 'users', 3, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:23:20'),
+(16, 2, 'LOGIN', 'users', 2, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:23:39'),
+(17, 3, 'LOGIN', 'users', 3, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:29:57'),
+(18, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:30:22'),
+(19, 1, 'LOGOUT', 'users', 1, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:30:41'),
+(20, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:30:57'),
+(21, 3, 'LOGIN', 'users', 3, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:43:11'),
+(22, 3, 'LOGOUT', 'users', 3, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:46:16'),
+(23, 3, 'LOGIN', 'users', 3, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:46:39'),
+(24, 3, 'ADD_CHILD', 'children', 2, 'Added child: test 2 child', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:49:34'),
+(25, 3, 'LOGOUT', 'users', 3, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:51:58'),
+(26, 2, 'LOGIN', 'users', 2, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:52:07'),
+(27, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:52:59'),
+(28, 1, 'LOGOUT', 'users', 1, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:53:16'),
+(29, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:53:24'),
+(30, 1, 'TOGGLE_HOSPITAL', 'hospitals', 1, 'Deactivated hospital ID: 1', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:57:04'),
+(31, 1, 'LOGOUT', 'users', 1, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:57:27'),
+(32, 3, 'LOGIN', 'users', 3, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-06 05:57:36'),
+(33, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-11 04:06:42'),
+(34, 1, 'LOGOUT', 'users', 1, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-11 04:08:42'),
+(35, 3, 'LOGIN', 'users', 3, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-11 04:10:58'),
+(36, 3, 'LOGOUT', 'users', 3, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-11 04:12:05'),
+(37, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-11 04:14:11'),
+(38, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 03:52:54'),
+(39, 3, 'LOGIN', 'users', 3, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 03:58:24'),
+(40, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 03:59:18'),
+(41, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 04:03:20'),
+(42, 1, 'LOGOUT', 'users', 1, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 04:30:27'),
+(43, 3, 'LOGIN', 'users', 3, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 04:30:39'),
+(44, 3, 'LOGOUT', 'users', 3, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 04:30:58'),
+(45, 4, 'LOGIN', 'users', 4, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 04:33:51'),
+(46, 4, 'ADD_CHILD', 'children', 3, 'Added child: wasif', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 04:34:46'),
+(47, 4, 'LOGOUT', 'users', 4, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 04:35:36'),
+(48, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 04:35:46'),
+(49, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 05:12:16'),
+(50, 3, 'LOGIN', 'users', 3, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 05:12:58'),
+(51, 3, 'ADD_CHILD', 'children', 4, 'Added child: areeba', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 05:13:50'),
+(52, 3, 'LOGIN', 'users', 3, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 05:28:51'),
+(53, 3, 'LOGOUT', 'users', 3, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 05:33:10'),
+(54, 3, 'LOGIN', 'users', 3, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 05:34:14'),
+(55, 3, 'LOGOUT', 'users', 3, 'User logged out', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 05:41:31'),
+(56, 1, 'LOGIN', 'users', 1, 'User logged in', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-13 05:41:46');
 
 -- --------------------------------------------------------
 
@@ -214,6 +302,31 @@ CREATE TABLE `children` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `children`
+--
+
+INSERT INTO `children` (`child_id`, `parent_id`, `full_name`, `date_of_birth`, `gender`, `blood_group`, `birth_weight`, `birth_height`, `medical_conditions`, `allergies`, `photo_url`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Test Child', '2025-01-08', 'Male', 'A+', '20.00', '90.00', 'Mental Issues', 'Humans', 'uploads/children/child_1770355302_6874.jfif', 1, '2026-02-06 05:21:42', '2026-02-06 05:21:42'),
+(2, 1, 'test 2 child', '2025-12-16', 'Male', 'B+', '45.00', '55.00', 'nothing', 'nothing', 'uploads/children/child_1770356974_4850.jfif', 1, '2026-02-06 05:49:34', '2026-02-06 05:49:34'),
+(3, 2, 'wasif', '2002-01-22', 'Male', 'A-', '55.00', '25.00', 'nothing', 'nothing', 'uploads/children/child_1770957286_1283.jfif', 1, '2026-02-13 04:34:46', '2026-02-13 04:34:46'),
+(4, 1, 'areeba', '2025-11-04', 'Female', 'AB-', '5.20', '2.60', 'nothing', 'nothing', 'uploads/children/child_1770959630_5484.jfif', 1, '2026-02-13 05:13:50', '2026-02-13 05:13:50');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `doctors`
+--
+
+CREATE TABLE `doctors` (
+  `doctor_id` int(11) NOT NULL,
+  `full_name` varchar(100) NOT NULL,
+  `specialization` varchar(100) DEFAULT NULL,
+  `hospital_id` int(11) DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- --------------------------------------------------------
 
 --
@@ -237,6 +350,13 @@ CREATE TABLE `hospitals` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `hospitals`
+--
+
+INSERT INTO `hospitals` (`hospital_id`, `user_id`, `hospital_name`, `registration_number`, `address`, `city`, `state`, `postal_code`, `latitude`, `longitude`, `contact_person`, `is_verified`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 2, 'Aga Khan', '1122335', 'Dalmia, Karachi', 'Karachi', 'Sindh', '75550', '24.99000000', '25.33370000', 'Price Aga Khan', 1, 0, '2026-02-06 05:09:25', '2026-02-06 05:57:04');
 
 -- --------------------------------------------------------
 
@@ -288,6 +408,15 @@ CREATE TABLE `notifications` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `notifications`
+--
+
+INSERT INTO `notifications` (`notification_id`, `user_id`, `notification_type`, `title`, `message`, `related_id`, `is_read`, `created_at`) VALUES
+(1, 2, 'system', 'Hospital Verified', 'Your hospital Aga Khan has been verified by admin. You can now start managing appointments.', 1, 0, '2026-02-06 05:09:53'),
+(2, 1, 'system', 'New Appointment Request', 'New vaccination appointment request for Test Child - BCG', 1, 0, '2026-02-06 05:22:23'),
+(3, 3, 'appointment_approved', 'Appointment Approved', 'Your vaccination appointment request for Test Child has been approved!', 1, 0, '2026-02-06 05:22:58');
+
 -- --------------------------------------------------------
 
 --
@@ -306,6 +435,14 @@ CREATE TABLE `parents` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `parents`
+--
+
+INSERT INTO `parents` (`parent_id`, `user_id`, `full_name`, `address`, `city`, `state`, `postal_code`, `emergency_contact`, `created_at`, `updated_at`) VALUES
+(1, 3, 'Test Parent', 'NN, Karachi', 'Karachi', 'Sindh', '76689', '03331234567', '2026-02-06 05:19:01', '2026-02-06 05:19:01'),
+(2, 4, 'Hassam', 'NN, Karachi', 'Karachi', 'Sindh', '75550', '03331234567', '2026-02-13 04:33:33', '2026-02-13 04:33:33');
 
 -- --------------------------------------------------------
 
@@ -330,7 +467,10 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `email`, `password_hash`, `user_type`, `phone`, `is_active`, `created_at`, `updated_at`, `last_login`) VALUES
-(1, 'admin@vaccination.com', '$2y$10$JMbtMyhSgFXlSTOpeEbkL.cPFYk.k3kWQe7oHPtzIfy181.PNE0DO', 'admin', '+923001234567', 1, '2026-02-04 05:02:23', '2026-02-04 05:05:19', '2026-02-04 05:05:19');
+(1, 'admin@vaccination.com', '$2y$10$JMbtMyhSgFXlSTOpeEbkL.cPFYk.k3kWQe7oHPtzIfy181.PNE0DO', 'admin', '+923001234567', 1, '2026-02-04 05:02:23', '2026-02-06 04:32:20', '2026-02-06 04:32:20'),
+(2, 'aku@mailinator.com', '$2y$10$PS0pwx5Mv0XPFegy5zi8xOibU6QfgCmv2SRIj6RE/T8ntBEgMuXPG', 'hospital', '03331234567', 0, '2026-02-06 05:08:26', '2026-02-06 05:57:04', NULL),
+(3, 'vcsparent@mailinator.com', '$2y$10$KNCN.mdS5yjsP1Ie3vRmGuF3B43wnXIO3cbj5ED24fSYWXQogzZZa', 'parent', NULL, 1, '2026-02-06 05:18:10', '2026-02-06 05:18:10', NULL),
+(4, 'hassam.4354+1@gmail.com', '$2y$10$Hmh32fAEBKIR6.MnTnlA2O4rV7bx6HzFVnnYUjYsKdJawXJ0TJY9i', 'parent', NULL, 1, '2026-02-13 04:33:18', '2026-02-13 04:33:18', NULL);
 
 -- --------------------------------------------------------
 
@@ -353,6 +493,13 @@ CREATE TABLE `vaccination_bookings` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `vaccination_bookings`
+--
+
+INSERT INTO `vaccination_bookings` (`booking_id`, `request_id`, `child_id`, `hospital_id`, `vaccine_id`, `dose_number`, `appointment_date`, `appointment_time`, `booking_status`, `confirmation_code`, `reminder_sent`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 1, 1, 1, '2026-02-20', '22:30:00', 'scheduled', 'VC000001', 0, '2026-02-06 05:22:58', '2026-02-06 05:22:58');
 
 -- --------------------------------------------------------
 
@@ -431,6 +578,7 @@ CREATE TABLE `vaccines` (
   `vaccine_code` varchar(20) DEFAULT NULL,
   `description` text DEFAULT NULL,
   `manufacturer` varchar(100) DEFAULT NULL,
+  `scheduled_age` varchar(50) DEFAULT NULL,
   `dosage_info` varchar(100) DEFAULT NULL,
   `storage_requirements` text DEFAULT NULL,
   `side_effects` text DEFAULT NULL,
@@ -443,17 +591,17 @@ CREATE TABLE `vaccines` (
 -- Dumping data for table `vaccines`
 --
 
-INSERT INTO `vaccines` (`vaccine_id`, `vaccine_name`, `vaccine_code`, `description`, `manufacturer`, `dosage_info`, `storage_requirements`, `side_effects`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'BCG', 'BCG-01', 'Bacillus Calmette–Guérin vaccine against tuberculosis', 'Serum Institute', NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
-(2, 'Hepatitis B', 'HEP-B', 'Hepatitis B vaccine', 'GlaxoSmithKline', NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
-(3, 'OPV', 'OPV-01', 'Oral Polio Vaccine', 'Bio-Med', NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
-(4, 'Pentavalent', 'PENTA', 'DPT-HepB-Hib combination vaccine', 'Panacea Biotec', NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
-(5, 'PCV', 'PCV-10', 'Pneumococcal Conjugate Vaccine', 'Pfizer', NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
-(6, 'IPV', 'IPV-01', 'Inactivated Polio Vaccine', 'Sanofi Pasteur', NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
-(7, 'Measles', 'MEASLES-1', 'Measles vaccine', 'Serum Institute', NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
-(8, 'Measles-Rubella', 'MR-01', 'Measles-Rubella vaccine', 'Serum Institute', NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
-(9, 'Vitamin A', 'VIT-A', 'Vitamin A supplementation', 'Various', NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
-(10, 'DPT Booster', 'DPT-B', 'DPT Booster dose', 'Panacea Biotec', NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23');
+INSERT INTO `vaccines` (`vaccine_id`, `vaccine_name`, `vaccine_code`, `description`, `manufacturer`, `scheduled_age`, `dosage_info`, `storage_requirements`, `side_effects`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 'BCG', 'BCG-01', 'Bacillus Calmette–Guérin vaccine against tuberculosis', 'Serum Institute', NULL, NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
+(2, 'Hepatitis B', 'HEP-B', 'Hepatitis B vaccine', 'GlaxoSmithKline', NULL, NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
+(3, 'OPV', 'OPV-01', 'Oral Polio Vaccine', 'Bio-Med', NULL, NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
+(4, 'Pentavalent', 'PENTA', 'DPT-HepB-Hib combination vaccine', 'Panacea Biotec', NULL, NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
+(5, 'PCV', 'PCV-10', 'Pneumococcal Conjugate Vaccine', 'Pfizer', NULL, NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
+(6, 'IPV', 'IPV-01', 'Inactivated Polio Vaccine', 'Sanofi Pasteur', NULL, NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
+(7, 'Measles', 'MEASLES-1', 'Measles vaccine', 'Serum Institute', NULL, NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
+(8, 'Measles-Rubella', 'MR-01', 'Measles-Rubella vaccine', 'Serum Institute', NULL, NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
+(9, 'Vitamin A', 'VIT-A', 'Vitamin A supplementation', 'Various', NULL, NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23'),
+(10, 'DPT Booster', 'DPT-B', 'DPT Booster dose', 'Panacea Biotec', NULL, NULL, NULL, NULL, 1, '2026-02-04 05:02:23', '2026-02-04 05:02:23');
 
 -- --------------------------------------------------------
 
@@ -606,6 +754,12 @@ ALTER TABLE `admins`
   ADD UNIQUE KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `appointments`
+--
+ALTER TABLE `appointments`
+  ADD PRIMARY KEY (`appointment_id`);
+
+--
 -- Indexes for table `appointment_requests`
 --
 ALTER TABLE `appointment_requests`
@@ -635,6 +789,13 @@ ALTER TABLE `children`
   ADD KEY `idx_parent_id` (`parent_id`),
   ADD KEY `idx_dob` (`date_of_birth`),
   ADD KEY `idx_children_parent_active` (`parent_id`,`is_active`);
+
+--
+-- Indexes for table `doctors`
+--
+ALTER TABLE `doctors`
+  ADD PRIMARY KEY (`doctor_id`),
+  ADD KEY `hospital_id` (`hospital_id`);
 
 --
 -- Indexes for table `hospitals`
@@ -737,28 +898,40 @@ ALTER TABLE `admins`
   MODIFY `admin_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- AUTO_INCREMENT for table `appointments`
+--
+ALTER TABLE `appointments`
+  MODIFY `appointment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `appointment_requests`
 --
 ALTER TABLE `appointment_requests`
-  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
 -- AUTO_INCREMENT for table `children`
 --
 ALTER TABLE `children`
-  MODIFY `child_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `child_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `doctors`
+--
+ALTER TABLE `doctors`
+  MODIFY `doctor_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `hospitals`
 --
 ALTER TABLE `hospitals`
-  MODIFY `hospital_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `hospital_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `hospital_vaccine_inventory`
@@ -770,25 +943,25 @@ ALTER TABLE `hospital_vaccine_inventory`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `parents`
 --
 ALTER TABLE `parents`
-  MODIFY `parent_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `parent_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `vaccination_bookings`
 --
 ALTER TABLE `vaccination_bookings`
-  MODIFY `booking_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `booking_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `vaccination_records`
@@ -838,6 +1011,12 @@ ALTER TABLE `audit_logs`
 --
 ALTER TABLE `children`
   ADD CONSTRAINT `children_ibfk_1` FOREIGN KEY (`parent_id`) REFERENCES `parents` (`parent_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `doctors`
+--
+ALTER TABLE `doctors`
+  ADD CONSTRAINT `doctors_ibfk_1` FOREIGN KEY (`hospital_id`) REFERENCES `hospitals` (`hospital_id`);
 
 --
 -- Constraints for table `hospitals`
