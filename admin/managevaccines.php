@@ -20,32 +20,49 @@ $message_type = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_vaccine'])) {
     $vaccine_name = trim($_POST['vaccine_name'] ?? '');
-    $vaccine_description = trim($_POST['vaccine_description'] ?? '');
+    $description = trim($_POST['vaccine_description'] ?? '');
     $scheduled_age = trim($_POST['scheduled_age'] ?? '');
     $manufacturer = trim($_POST['manufacturer'] ?? '');
     $dose_number = intval($_POST['dose_number'] ?? 1);
     $is_active = isset($_POST['is_active']) ? 1 : 1;
     
-    if (!empty($vaccine_name) && !empty($vaccine_description)) {
-        // Check if vaccines table exists, if not create it
+    if (!empty($vaccine_name) && !empty($description)) {
         try {
-            $pdo->exec("CREATE TABLE IF NOT EXISTS vaccines (
-                vaccine_id INT PRIMARY KEY AUTO_INCREMENT,
-                vaccine_name VARCHAR(100) NOT NULL,
-                description TEXT,
-                scheduled_age VARCHAR(50),
-                manufacturer VARCHAR(100),
-                dose_number INT DEFAULT 1,
-                is_active BOOLEAN DEFAULT TRUE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )");
+            // Check if vaccines table exists with correct structure
+            $check_table = $pdo->query("SHOW TABLES LIKE 'vaccines'");
+            if ($check_table->rowCount() == 0) {
+                // Create table with your database structure
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `vaccines` (
+                    `vaccine_id` int(11) NOT NULL AUTO_INCREMENT,
+                    `vaccine_name` varchar(100) NOT NULL,
+                    `vaccine_code` varchar(20) DEFAULT NULL,
+                    `description` text DEFAULT NULL,
+                    `manufacturer` varchar(100) DEFAULT NULL,
+                    `scheduled_age` varchar(50) DEFAULT NULL,
+                    `dosage_info` varchar(100) DEFAULT NULL,
+                    `storage_requirements` text DEFAULT NULL,
+                    `side_effects` text DEFAULT NULL,
+                    `is_active` tinyint(1) DEFAULT 1,
+                    `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+                    `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+                    PRIMARY KEY (`vaccine_id`),
+                    UNIQUE KEY `vaccine_code` (`vaccine_code`),
+                    KEY `idx_vaccine_code` (`vaccine_code`),
+                    KEY `idx_is_active` (`is_active`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            }
             
-            // Insert vaccine
-            $stmt = $pdo->prepare("INSERT INTO vaccines (vaccine_name, description, scheduled_age, manufacturer, dose_number, is_active) 
-                                  VALUES (?, ?, ?, ?, ?, ?)");
+            // Generate vaccine code
+            $words = explode(' ', $vaccine_name);
+            $code = strtoupper(substr($words[0], 0, 3)) . '-' . rand(10, 99);
             
-            if ($stmt->execute([$vaccine_name, $vaccine_description, $scheduled_age, $manufacturer, $dose_number, $is_active])) {
-                $message = "✅ Vaccine '{$vaccine_name}' added successfully!";
+            // Insert vaccine using your table structure
+            $stmt = $pdo->prepare("INSERT INTO vaccines 
+                (vaccine_name, vaccine_code, description, manufacturer, scheduled_age, is_active, created_at, updated_at) 
+                VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())");
+            
+            if ($stmt->execute([$vaccine_name, $code, $description, $manufacturer, $scheduled_age, $is_active])) {
+                $message = "✅ Vaccine '{$vaccine_name}' added successfully! Code: {$code}";
                 $message_type = "success";
             } else {
                 $message = "❌ Failed to add vaccine.";
@@ -65,27 +82,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_vaccine'])) {
 $vaccines = [];
 try {
     $stmt = $pdo->query("SELECT * FROM vaccines WHERE is_active = 1 OR is_active IS NULL ORDER BY vaccine_name");
-    $vaccines = $stmt->fetchAll();
+    $vaccines = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     // Table might not exist yet
     $vaccines = [];
 }
 
-// Default vaccines if database empty
+// If no vaccines in database, show default ones but don't add to database
 if (empty($vaccines)) {
     $vaccines = [
-        ['vaccine_name' => 'BCG', 'vaccine_description' => 'BCG vaccine tuberculosis (TB) se bachao ke liye di jati hai.', 'scheduled_age' => 'At Birth', 'manufacturer' => 'Serum Institute', 'dose_number' => 1],
-        ['vaccine_name' => 'DPT', 'vaccine_description' => 'DPT diphtheria, pertussis aur tetanus se protection deta hai.', 'scheduled_age' => '6 weeks, 10 weeks, 14 weeks', 'manufacturer' => 'Serum Institute', 'dose_number' => 3],
-        ['vaccine_name' => 'Hepatitis B', 'vaccine_description' => 'Ye vaccine liver infection se bachata hai.', 'scheduled_age' => 'At Birth, 6,10,14 weeks', 'manufacturer' => 'Biological E', 'dose_number' => 4],
-        ['vaccine_name' => 'IPV', 'vaccine_description' => 'IPV polio se bachao karta hai.', 'scheduled_age' => '6,10,14 weeks', 'manufacturer' => 'Sanofi', 'dose_number' => 3],
-        ['vaccine_name' => 'Measles', 'vaccine_description' => 'Measles vaccine khusra virus se bachata hai.', 'scheduled_age' => '9 months', 'manufacturer' => 'Serum Institute', 'dose_number' => 1],
-        ['vaccine_name' => 'OPV', 'vaccine_description' => 'OPV oral polio vaccine hai.', 'scheduled_age' => 'At Birth, 6,10,14 weeks', 'manufacturer' => 'Bharat Biotech', 'dose_number' => 4],
-        ['vaccine_name' => 'PCV', 'vaccine_description' => 'PCV pneumonia se bachata hai.', 'scheduled_age' => '6 weeks, 10 weeks, 14 weeks, Booster', 'manufacturer' => 'Pfizer', 'dose_number' => 4],
-        ['vaccine_name' => 'Pentavalent', 'vaccine_description' => 'Ye vaccine 5 diseases se ek sath bachata hai.', 'scheduled_age' => '6,10,14 weeks', 'manufacturer' => 'Serum Institute', 'dose_number' => 3],
-        ['vaccine_name' => 'Vitamin A', 'vaccine_description' => 'Vitamin A immunity strong karta hai.', 'scheduled_age' => '9 months, 16 months, 24 months', 'manufacturer' => 'Various', 'dose_number' => 3],
-        ['vaccine_name' => 'Rotavirus', 'vaccine_description' => 'Rotavirus severe diarrhea se bachata hai.', 'scheduled_age' => '6,10,14 weeks', 'manufacturer' => 'Bharat Biotech', 'dose_number' => 3],
-        ['vaccine_name' => 'MMR', 'vaccine_description' => 'MMR measles, mumps aur rubella se protection deta hai.', 'scheduled_age' => '9-12 months, 15 months', 'manufacturer' => 'Serum Institute', 'dose_number' => 2],
-        ['vaccine_name' => 'Typhoid', 'vaccine_description' => 'Typhoid vaccine bukhar se bachata hai.', 'scheduled_age' => '2 years', 'manufacturer' => 'Bharat Biotech', 'dose_number' => 1]
+        ['vaccine_id' => 0, 'vaccine_name' => 'BCG', 'description' => 'BCG vaccine tuberculosis (TB) se bachao ke liye di jati hai.', 'scheduled_age' => 'At Birth', 'manufacturer' => 'Serum Institute', 'dose_number' => 1],
+        ['vaccine_id' => 0, 'vaccine_name' => 'DPT', 'description' => 'DPT diphtheria, pertussis aur tetanus se protection deta hai.', 'scheduled_age' => '6 weeks, 10 weeks, 14 weeks', 'manufacturer' => 'Serum Institute', 'dose_number' => 3],
+        ['vaccine_id' => 0, 'vaccine_name' => 'Hepatitis B', 'description' => 'Ye vaccine liver infection se bachata hai.', 'scheduled_age' => 'At Birth, 6,10,14 weeks', 'manufacturer' => 'Biological E', 'dose_number' => 4],
+        ['vaccine_id' => 0, 'vaccine_name' => 'IPV', 'description' => 'IPV polio se bachao karta hai.', 'scheduled_age' => '6,10,14 weeks', 'manufacturer' => 'Sanofi', 'dose_number' => 3],
+        ['vaccine_id' => 0, 'vaccine_name' => 'Measles', 'description' => 'Measles vaccine khusra virus se bachata hai.', 'scheduled_age' => '9 months', 'manufacturer' => 'Serum Institute', 'dose_number' => 1],
+        ['vaccine_id' => 0, 'vaccine_name' => 'OPV', 'description' => 'OPV oral polio vaccine hai.', 'scheduled_age' => 'At Birth, 6,10,14 weeks', 'manufacturer' => 'Bharat Biotech', 'dose_number' => 4],
+        ['vaccine_id' => 0, 'vaccine_name' => 'PCV', 'description' => 'PCV pneumonia se bachata hai.', 'scheduled_age' => '6 weeks, 10 weeks, 14 weeks, Booster', 'manufacturer' => 'Pfizer', 'dose_number' => 4],
+        ['vaccine_id' => 0, 'vaccine_name' => 'Pentavalent', 'description' => 'Ye vaccine 5 diseases se ek sath bachata hai.', 'scheduled_age' => '6,10,14 weeks', 'manufacturer' => 'Serum Institute', 'dose_number' => 3],
+        ['vaccine_id' => 0, 'vaccine_name' => 'Vitamin A', 'description' => 'Vitamin A immunity strong karta hai.', 'scheduled_age' => '9 months, 16 months, 24 months', 'manufacturer' => 'Various', 'dose_number' => 3],
+        ['vaccine_id' => 0, 'vaccine_name' => 'Rotavirus', 'description' => 'Rotavirus severe diarrhea se bachata hai.', 'scheduled_age' => '6,10,14 weeks', 'manufacturer' => 'Bharat Biotech', 'dose_number' => 3],
+        ['vaccine_id' => 0, 'vaccine_name' => 'MMR', 'description' => 'MMR measles, mumps aur rubella se protection deta hai.', 'scheduled_age' => '9-12 months, 15 months', 'manufacturer' => 'Serum Institute', 'dose_number' => 2],
+        ['vaccine_id' => 0, 'vaccine_name' => 'Typhoid', 'description' => 'Typhoid vaccine bukhar se bachata hai.', 'scheduled_age' => '2 years', 'manufacturer' => 'Bharat Biotech', 'dose_number' => 1]
     ];
 }
 ?>
@@ -106,7 +123,8 @@ if (empty($vaccines)) {
 
         body {
             font-family: "Segoe UI", Arial, sans-serif;
-            background: #f2f5ff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
         }
 
         .header {
@@ -152,8 +170,9 @@ if (empty($vaccines)) {
 
         .title {
             font-size: 28px;
-            color: #333;
+            color: white;
             font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         /* ===== ADD VACCINE BUTTON ===== */
@@ -443,6 +462,16 @@ if (empty($vaccines)) {
             margin-top: 10px;
         }
 
+        .vaccine-code {
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #666;
+            margin-left: 8px;
+        }
+
         /* ===== ACTION BOX ===== */
         .action-box {
             margin-top: 45px;
@@ -577,7 +606,7 @@ if (empty($vaccines)) {
     <!-- Title with Add Vaccine Button -->
     <div class="title-section">
         <div class="d-flex align-items-center">
-            <h1 class="title"><i class="fas fa-syringe me-3" style="color: #5a6dfc;"></i>Vaccination History</h1>
+            <h1 class="title"><i class="fas fa-syringe me-3"></i>Vaccination History</h1>
             <span class="stats-badge ms-3">
                 <i class="fas fa-flask me-1"></i>Total Vaccines: <?php echo count($vaccines); ?>
             </span>
@@ -601,27 +630,21 @@ if (empty($vaccines)) {
         <div class="vaccine-card">
             <div class="vaccine-header">
                 <span class="vaccine-name">
-                    <?php echo htmlspecialchars(is_array($vaccine) ? ($vaccine['vaccine_name'] ?? $vaccine[0] ?? '') : ''); ?>
+                    <?php echo htmlspecialchars($vaccine['vaccine_name'] ?? ''); ?>
+                    <?php if (!empty($vaccine['vaccine_code'])): ?>
+                        <span class="vaccine-code"><?php echo $vaccine['vaccine_code']; ?></span>
+                    <?php endif; ?>
                 </span>
                 <span class="vaccine-age">
                     <i class="fas fa-calendar-alt me-1"></i>
-                    <?php 
-                    $age = is_array($vaccine) ? ($vaccine['scheduled_age'] ?? '') : '';
-                    echo htmlspecialchars($age ?: 'Various');
-                    ?>
+                    <?php echo htmlspecialchars($vaccine['scheduled_age'] ?? 'Various'); ?>
                 </span>
             </div>
             
-            <?php if (is_array($vaccine) && !empty($vaccine['manufacturer'])): ?>
+            <?php if (!empty($vaccine['manufacturer'])): ?>
             <div class="vaccine-manufacturer">
                 <i class="fas fa-industry"></i> <?php echo htmlspecialchars($vaccine['manufacturer']); ?>
             </div>
-            <?php endif; ?>
-            
-            <?php if (is_array($vaccine) && !empty($vaccine['dose_number'])): ?>
-            <span class="dose-badge">
-                <i class="fas fa-syringe me-1"></i> <?php echo $vaccine['dose_number']; ?> Dose(s)
-            </span>
             <?php endif; ?>
             
             <!-- Tooltip Description -->
@@ -629,10 +652,7 @@ if (empty($vaccines)) {
                 <strong style="color: #5a6dfc; display: block; margin-bottom: 8px;">
                     <i class="fas fa-info-circle me-1"></i>About this vaccine:
                 </strong>
-                <?php 
-                $desc = is_array($vaccine) ? ($vaccine['vaccine_description'] ?? 'Information available.') : '';
-                echo htmlspecialchars($desc);
-                ?>
+                <?php echo htmlspecialchars($vaccine['description'] ?? 'Information available.'); ?>
             </div>
         </div>
         <?php endforeach; ?>
@@ -726,12 +746,12 @@ if (empty($vaccines)) {
 // ===== MODAL FUNCTIONS =====
 function openModal() {
     document.getElementById('vaccineModal').classList.add('show');
-    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
     document.getElementById('vaccineModal').classList.remove('show');
-    document.body.style.overflow = 'auto'; // Enable scrolling
+    document.body.style.overflow = 'auto';
 }
 
 // Close modal when clicking outside

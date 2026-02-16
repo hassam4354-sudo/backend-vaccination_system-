@@ -569,7 +569,7 @@ if (!$result) {
         <!-- Simple Header - Sirf Bookings -->
         <div class="page-header">
             <div>
-                <h1><i class="fas fa-calendar-check me-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i> Vaccination Bookings</h1>
+                <h1><i class="fas fa-calendar-check me-2"></i> Vaccination Bookings</h1>
                 <p><i class="fas fa-calendar-alt me-1" style="color: #667eea;"></i> <?php echo date('l, F j, Y'); ?></p>
             </div>
             <div>
