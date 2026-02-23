@@ -878,7 +878,7 @@ $result_cities = mysqli_query($connection, $query_cities);
             <a href="manage_hospitals.php" class="active">
                 <i class="fas fa-hospital"></i> Hospitals
             </a>
-            <a href="manage_vaccines.php">
+            <a href="managevaccines.php">
                 <i class="fas fa-syringe"></i> Vaccines
             </a>
             <a href="../logout.php">

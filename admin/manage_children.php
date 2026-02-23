@@ -710,9 +710,7 @@ $parents = $pdo->query("SELECT parent_id, full_name FROM parents ORDER BY full_n
                     <a href="manage_children.php" class="active">
                         <i class="fas fa-child me-2"></i>Manage Children
                     </a>
-                    <a href="manage_parents.php">
-                        <i class="fas fa-users me-2"></i>Manage Parents
-                    </a>
+                    
                     <a href="manage_hospitals.php">
                         <i class="fas fa-hospital me-2"></i>Manage Hospitals
                     </a>
