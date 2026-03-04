@@ -38,7 +38,7 @@ if(!$user_id) {
 </head>
 <body>
     <div class="container">
-        <h1>👤 Complete Your Profile</h1>
+        <h1> Complete Your Profile</h1>
         <form action="save_profile.php" method="post">
             <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
             

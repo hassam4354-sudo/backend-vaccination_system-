@@ -1,1017 +1,642 @@
 <?php
-// ============================================
-// COMPLETE BOOK APPOINTMENT SYSTEM
-// Back button - Parent Dashboard par jayega
-// ============================================
-
 session_start();
-
-// Check if user is logged in
-if (!isset($_SESSION['user_id']) && !isset($_SESSION["logged_in"])) {
-    header("Location: ../login.php");
+if(!isset($_SESSION["logged_in"]) || $_SESSION["user_type"] != "parent"){
+    header("location:../login.php");
     exit();
 }
 
-// Handle both session formats
-if (isset($_SESSION["user_id"])) {
-    $user_id = $_SESSION["user_id"];
-    $user_type = $_SESSION['user_type'] ?? $_SESSION["user_type"] ?? '';
-} else if (isset($_SESSION["user_id"])) {
-    $user_id = $_SESSION["user_id"];
-    $user_type = $_SESSION["user_type"] ?? '';
+include("../dbconnection.php");
+
+// ── Mark notification as read (AJAX or form post) ──
+if(isset($_POST['dismiss_notification']) && isset($_POST['notification_id'])) {
+    $notif_id = intval($_POST['notification_id']);
+    $uid      = $_SESSION['user_id'];
+    mysqli_query($connection,
+        "UPDATE notifications SET is_read=1 WHERE notification_id='$notif_id' AND user_id='$uid'");
+    header("location: book_appointment.php");
+    exit();
 }
 
-// Database connection
-$db_host = "localhost";
-$db_name = "child_vaccination_system";
-$db_user = "root";
-$db_pass = "";
+$user_id = $_SESSION["user_id"];
 
-try {
-    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("<div style='background: #f8d7da; color: #721c24; padding: 20px; margin: 20px; border-radius: 10px;'>
-         <h3>❌ Database Connection Failed</h3>
-         <p>Error: " . $e->getMessage() . "</p>
-         </div>");
+// Get parent data
+$query_parent  = "SELECT * FROM parents WHERE user_id = '$user_id'";
+$result_parent = mysqli_query($connection, $query_parent);
+$parent_data   = mysqli_fetch_assoc($result_parent);
+$parent_id     = $parent_data['parent_id'] ?? "";
+
+// DEBUG
+if(empty($parent_id)) {
+    die("<h2 style='color:red'>DEBUG: parent_id not found!<br>user_id from session = '$user_id'<br>DB Error = " . mysqli_error($connection) . "<br>Session = <pre>" . print_r($_SESSION, true) . "</pre></h2>");
 }
 
-// Get parent_id for parent users
-$parent_id = 0;
-if ($user_type === 'parent') {
-    // Try both database connection styles
-    if (isset($pdo)) {
-        $stmt = $pdo->prepare("SELECT parent_id FROM parents WHERE user_id = ?");
-        $stmt->execute([$user_id]);
-        $parent = $stmt->fetch();
-        $parent_id = $parent ? $parent['parent_id'] : 0;
+// Get parent's active children
+$query_children  = "SELECT * FROM children WHERE parent_id = '$parent_id' AND is_active = 1 ORDER BY full_name";
+$result_children = mysqli_query($connection, $query_children);
+$children_count  = mysqli_num_rows($result_children);
+
+// Get verified + active hospitals
+$query_hospitals  = "SELECT * FROM hospitals WHERE is_active = 1 AND is_verified = 1 ORDER BY hospital_name";
+$result_hospitals = mysqli_query($connection, $query_hospitals);
+$hospitals_count  = mysqli_num_rows($result_hospitals);
+
+// Get active vaccines
+$query_vaccines  = "SELECT * FROM vaccines WHERE is_active = 1 ORDER BY vaccine_name";
+$result_vaccines = mysqli_query($connection, $query_vaccines);
+
+// Flash message
+$msg      = $_SESSION['msg']      ?? '';
+$msg_type = $_SESSION['msg_type'] ?? '';
+unset($_SESSION['msg'], $_SESSION['msg_type']);
+
+// ── Fetch unread approval notifications for this parent ──
+$approval_alerts = [];
+$q_alerts = "SELECT n.notification_id, n.message, n.related_id, n.created_at,
+                    vb.confirmation_code, vb.appointment_date, vb.appointment_time,
+                    c.full_name as child_name, v.vaccine_name, h.hospital_name
+             FROM notifications n
+             JOIN appointment_requests ar ON n.related_id = ar.request_id
+             JOIN vaccination_bookings vb ON vb.request_id = ar.request_id
+             JOIN children c   ON ar.child_id  = c.child_id
+             JOIN vaccines v   ON ar.vaccine_id = v.vaccine_id
+             JOIN hospitals h  ON ar.hospital_id = h.hospital_id
+             WHERE n.user_id = '$user_id'
+               AND n.notification_type = 'appointment_approved'
+               AND n.is_read = 0
+             ORDER BY n.created_at DESC";
+$r_alerts = mysqli_query($connection, $q_alerts);
+if($r_alerts){
+    while($row = mysqli_fetch_assoc($r_alerts)){
+        $approval_alerts[] = $row;
     }
 }
-
-// ========== VACCINES LIST ==========
-$simple_vaccines = [
-    ['id' => 1, 'name' => 'BCG', 'age' => 'At Birth'],
-    ['id' => 2, 'name' => 'Hepatitis B', 'age' => 'At Birth, 6,10,14 weeks'],
-    ['id' => 3, 'name' => 'OPV', 'age' => 'At Birth, 6,10,14 weeks'],
-    ['id' => 4, 'name' => 'Pentavalent', 'age' => '6,10,14 weeks'],
-    ['id' => 5, 'name' => 'Rotavirus', 'age' => '6,10,14 weeks'],
-    ['id' => 6, 'name' => 'IPV', 'age' => '6,10,14 weeks'],
-    ['id' => 7, 'name' => 'PCV', 'age' => '6,10,14 weeks'],
-    ['id' => 8, 'name' => 'MMR', 'age' => '9-12 months'],
-    ['id' => 9, 'name' => 'Measles', 'age' => '9 months'],
-    ['id' => 10, 'name' => 'Vitamin A', 'age' => '9 months, 16 months'],
-    ['id' => 11, 'name' => 'DPT', 'age' => '18 months, 5 years'],
-    ['id' => 12, 'name' => 'Typhoid', 'age' => '2 years']
-];
-
-// ========== HOSPITALS LIST ==========
-$simple_hospitals = [
-    ['id' => 1, 'name' => 'City Care Hospital', 'city' => 'Mumbai'],
-    ['id' => 2, 'name' => "Children's Health Center", 'city' => 'Delhi'],
-    ['id' => 3, 'name' => 'Vaccination Hub', 'city' => 'Bangalore'],
-    ['id' => 4, 'name' => 'Mother & Child Hospital', 'city' => 'Pune'],
-    ['id' => 5, 'name' => 'Pediatric Care Center', 'city' => 'Chennai']
-];
-
-// ========== DOCTORS LIST ==========
-$simple_doctors = [
-    ['id' => 1, 'name' => 'Dr. Sharma', 'specialization' => 'Pediatrician', 'hospital_id' => 1],
-    ['id' => 2, 'name' => 'Dr. Gupta', 'specialization' => 'Child Specialist', 'hospital_id' => 1],
-    ['id' => 3, 'name' => 'Dr. Patel', 'specialization' => 'Vaccination Expert', 'hospital_id' => 2],
-    ['id' => 4, 'name' => 'Dr. Singh', 'specialization' => 'General Physician', 'hospital_id' => 2],
-    ['id' => 5, 'name' => 'Dr. Kumar', 'specialization' => 'Pediatrician', 'hospital_id' => 3],
-    ['id' => 6, 'name' => 'Dr. Verma', 'specialization' => 'Neonatologist', 'hospital_id' => 3],
-    ['id' => 7, 'name' => 'Dr. Reddy', 'specialization' => 'Pediatrician', 'hospital_id' => 4],
-    ['id' => 8, 'name' => 'Dr. Joshi', 'specialization' => 'Family Medicine', 'hospital_id' => 5]
-];
-
-// ========== GET REGISTERED CHILDREN ==========
-$children = [];
-try {
-    if ($user_type === 'parent' && $parent_id > 0) {
-        $stmt = $pdo->prepare("SELECT * FROM children WHERE parent_id = ? AND (is_active = 1 OR is_active IS NULL) ORDER BY full_name");
-        $stmt->execute([$parent_id]);
-        $children = $stmt->fetchAll();
-    }
-} catch (PDOException $e) {
-    $children = [];
-}
-
-// ========== PROCESS BOOKING ==========
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_appointment'])) {
-    $child_id = intval($_POST['child_id'] ?? 0);
-    $vaccine_id = intval($_POST['vaccine_id'] ?? 0);
-    $hospital_id = intval($_POST['hospital_id'] ?? 0);
-    $doctor_id = intval($_POST['doctor_id'] ?? 0);
-    $appointment_date = $_POST['appointment_date'] ?? '';
-    $appointment_time = $_POST['appointment_time'] ?? '';
-    $notes = $_POST['notes'] ?? '';
-    
-    if ($child_id && $vaccine_id && $hospital_id && $doctor_id && $appointment_date && $appointment_time) {
-        // Create appointments table if not exists
-        $pdo->exec("CREATE TABLE IF NOT EXISTS appointments (
-            appointment_id INT PRIMARY KEY AUTO_INCREMENT,
-            child_id INT NOT NULL,
-            vaccine_id INT NOT NULL,
-            hospital_id INT NOT NULL,
-            doctor_id INT NOT NULL,
-            appointment_date DATE NOT NULL,
-            appointment_time TIME NOT NULL,
-            notes TEXT,
-            status VARCHAR(20) DEFAULT 'scheduled',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )");
-        
-        // Check if slot available
-        $check = $pdo->prepare("SELECT appointment_id FROM appointments WHERE appointment_date = ? AND appointment_time = ? AND doctor_id = ? AND status != 'cancelled'");
-        $check->execute([$appointment_date, $appointment_time, $doctor_id]);
-        
-        if ($check->rowCount() > 0) {
-            $error = "❌ This time slot is already booked. Please select another time.";
-        } else {
-            $insert = $pdo->prepare("INSERT INTO appointments (child_id, vaccine_id, hospital_id, doctor_id, appointment_date, appointment_time, notes, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'scheduled')");
-            if ($insert->execute([$child_id, $vaccine_id, $hospital_id, $doctor_id, $appointment_date, $appointment_time, $notes])) {
-                $success = "✅ Appointment booked successfully!";
-            } else {
-                $error = "❌ Failed to book appointment.";
-            }
-        }
-    } else {
-        $error = "❌ Please fill all required fields.";
-    }
-}
-
-// ========== TIME SLOTS ==========
-$time_slots = [
-    '09:00:00' => '09:00 AM', '09:30:00' => '09:30 AM', '10:00:00' => '10:00 AM',
-    '10:30:00' => '10:30 AM', '11:00:00' => '11:00 AM', '11:30:00' => '11:30 AM',
-    '12:00:00' => '12:00 PM', '14:00:00' => '02:00 PM', '14:30:00' => '02:30 PM',
-    '15:00:00' => '03:00 PM', '15:30:00' => '03:30 PM', '16:00:00' => '04:00 PM'
-];
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Vaccination Appointment</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Book Appointment — VacciCare</title>
     <style>
-        /* ========== GLOBAL STYLES ========== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',Arial,sans-serif; background:#f0f4ff; color:#1a1a2e; }
+
+        /* NAVBAR */
+        .navbar {
+            background:#fff; border-bottom:2px solid #e8eeff;
+            padding:0 35px; display:flex; justify-content:space-between;
+            align-items:center; height:68px;
+            box-shadow:0 2px 16px rgba(59,130,246,0.08);
+            position:sticky; top:0; z-index:100;
         }
-        
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-            padding: 30px 20px;
+        .navbar-brand { display:flex; align-items:center; gap:10px; }
+        .navbar-brand .brand-icon {
+            width:40px; height:40px;
+            background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+            border-radius:10px; display:flex; align-items:center;
+            justify-content:center; font-size:20px;
         }
-        
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
+        .navbar-brand h2 { font-size:20px; font-weight:700; color:#1d4ed8; }
+        .navbar-links { display:flex; align-items:center; gap:6px; }
+        .navbar-links a {
+            color:#4b6cb7; text-decoration:none; padding:8px 14px;
+            border-radius:8px; font-size:13.5px; font-weight:500; transition:all .2s;
         }
-        
-        /* ========== BACK BUTTON - PARENT DASHBOARD ========== */
-        .back-wrapper {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 20px 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            border-left: 8px solid #667eea;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
+        .navbar-links a:hover  { background:#eff6ff; color:#1d4ed8; }
+        .navbar-links a.active { background:#eff6ff; color:#1d4ed8; font-weight:600; }
+        .navbar-links a.logout { background:#fee2e2; color:#dc2626; }
+        .navbar-links a.logout:hover { background:#fecaca; }
+
+        /* LAYOUT */
+        .page-wrapper { max-width:820px; margin:32px auto; padding:0 24px; }
+
+        /* BACK LINK */
+        .back-link {
+            display:inline-flex; align-items:center; gap:6px;
+            color:#1d4ed8; text-decoration:none; font-size:14px;
+            font-weight:600; margin-bottom:20px; padding:8px 14px;
+            background:#fff; border:1px solid #e8eeff; border-radius:8px;
+            transition:all .2s; box-shadow:0 1px 4px rgba(59,130,246,.07);
         }
-        
-        .back-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            text-decoration: none;
-            padding: 14px 35px;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            display: inline-flex;
-            align-items: center;
-            transition: all 0.3s;
-            border: 2px solid transparent;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        .back-link:hover { background:#eff6ff; transform:translateX(-3px); }
+
+        /* PAGE BANNER */
+        .page-banner {
+            background:linear-gradient(135deg,#1d4ed8 0%,#3b82f6 60%,#60a5fa 100%);
+            border-radius:18px; padding:28px 36px; margin-bottom:24px;
+            color:#fff; display:flex; align-items:center; justify-content:space-between;
+            box-shadow:0 8px 32px rgba(59,130,246,.3); position:relative; overflow:hidden;
         }
-        
-        .back-btn i {
-            margin-right: 12px;
-            font-size: 1.1rem;
+        .page-banner::before {
+            content:''; position:absolute; top:-40px; right:-40px;
+            width:180px; height:180px; background:rgba(255,255,255,.08); border-radius:50%;
         }
-        
-        .back-btn:hover {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-            transform: translateX(-8px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        .banner-text { position:relative; z-index:1; }
+        .banner-text h2 { font-size:21px; font-weight:700; margin-bottom:4px; }
+        .banner-text p  { font-size:13px; opacity:.85; }
+        .banner-icon { font-size:48px; position:relative; z-index:1; opacity:.9; }
+
+        /* ALERT */
+        .alert {
+            padding:13px 18px; border-radius:10px; margin-bottom:18px;
+            font-size:14px; font-weight:500; display:flex; align-items:center; gap:10px;
         }
-        
-        .page-indicator {
-            background: #f0f2ff;
-            padding: 10px 25px;
-            border-radius: 50px;
-            color: #667eea;
-            font-weight: 600;
-        }
-        
-        .page-indicator i {
-            margin-right: 8px;
-            color: #764ba2;
-        }
-        
-        /* ========== MAIN CARD ========== */
-        .appointment-card {
-            background: white;
-            border-radius: 30px;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.25);
-            overflow: hidden;
-            animation: slideUp 0.6s ease;
-        }
-        
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .card-header {
-            background: linear-gradient(145deg, #667eea, #764ba2);
-            padding: 35px 40px;
-            border-bottom: none;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .card-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
-            animation: rotate 25s linear infinite;
-        }
-        
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .card-header h2 {
-            color: white;
-            font-size: 2.2rem;
-            font-weight: 800;
-            margin-bottom: 10px;
-            position: relative;
-            z-index: 1;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .card-header p {
-            color: rgba(255,255,255,0.95);
-            font-size: 1.1rem;
-            margin-bottom: 0;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .card-body {
-            padding: 45px;
-            background: white;
-        }
-        
-        /* ========== CHILDREN TOGGLE SECTION ========== */
-        .children-section {
-            background: linear-gradient(145deg, #f8faff, #f0f3ff);
-            border-radius: 25px;
-            padding: 30px;
-            margin-bottom: 35px;
-            border: 2px solid #e2e8ff;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
-        }
-        
-        .section-title {
-            display: flex;
-            align-items: center;
-            margin-bottom: 25px;
-            border-bottom: 2px dashed #a0b4ff;
-            padding-bottom: 15px;
-        }
-        
-        .section-title i {
-            font-size: 2rem;
-            color: #667eea;
-            margin-right: 15px;
-        }
-        
-        .section-title h3 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 0;
-        }
-        
-        .registered-badge {
-            background: white;
-            color: #667eea;
-            padding: 8px 20px;
-            border-radius: 40px;
-            font-weight: 700;
-            margin-left: auto;
-            border: 2px solid #667eea;
-            box-shadow: 0 3px 10px rgba(102,126,234,0.2);
-        }
-        
-        /* Child Cards - Toggle Style */
-        .child-card {
-            background: white;
-            border-radius: 18px;
+        .alert-success { background:#dcfce7; border:1px solid #86efac; color:#166534; }
+        .alert-error   { background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; }
+
+        /* APPROVAL ALERT BANNER */
+        .approval-alert {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border: 2px solid #6ee7b7;
+            border-radius: 14px;
             padding: 18px 22px;
             margin-bottom: 18px;
-            border: 2.5px solid transparent;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             position: relative;
             overflow: hidden;
+            animation: slideDown .4s ease;
         }
-        
-        .child-card::before {
+        .approval-alert::before {
             content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 6px;
-            background: #667eea;
-            opacity: 0;
-            transition: opacity 0.3s;
+            position: absolute; top:0; left:0; bottom:0;
+            width: 5px;
+            background: linear-gradient(180deg, #10b981, #059669);
+            border-radius: 14px 0 0 14px;
         }
-        
-        .child-card:hover {
-            border-color: #667eea;
-            transform: translateX(8px) scale(1.01);
-            box-shadow: 0 10px 25px rgba(102,126,234,0.2);
-        }
-        
-        .child-card:hover::before {
-            opacity: 1;
-        }
-        
-        .child-card.selected {
-            background: linear-gradient(145deg, #667eea, #764ba2);
-            border-color: #667eea;
-            transform: scale(1.02);
-            box-shadow: 0 15px 35px rgba(102,126,234,0.4);
-        }
-        
-        .child-card.selected::before {
-            background: white;
-            opacity: 1;
-            width: 8px;
-        }
-        
-        .child-card.selected .child-name,
-        .child-card.selected .child-info,
-        .child-card.selected .child-info span,
-        .child-card.selected .badge {
-            color: white !important;
-        }
-        
-        .child-avatar {
-            width: 55px;
-            height: 55px;
-            background: linear-gradient(145deg, #edf2ff, #dfe7ff);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 18px;
-            border: 3px solid white;
-            box-shadow: 0 5px 12px rgba(0,0,0,0.08);
-        }
-        
-        .child-avatar i {
-            font-size: 1.6rem;
-            color: #667eea;
-        }
-        
-        .child-card.selected .child-avatar {
-            background: rgba(255,255,255,0.25);
-            border-color: rgba(255,255,255,0.5);
-        }
-        
-        .child-card.selected .child-avatar i {
-            color: white;
-        }
-        
-        .child-name {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 6px;
-        }
-        
-        .child-info {
-            display: flex;
-            gap: 20px;
-            color: #718096;
-            font-size: 0.9rem;
-        }
-        
-        .child-info span {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .radio-indicator {
-            width: 28px;
-            height: 28px;
-            border: 3px solid #667eea;
-            border-radius: 50%;
-            display: inline-block;
-            position: relative;
-            transition: all 0.2s;
-            background: white;
-        }
-        
-        .child-card.selected .radio-indicator {
-            background: white;
-            border-color: white;
-            transform: scale(1.1);
-        }
-        
-        .child-card.selected .radio-indicator::after {
-            content: '\f00c';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #764ba2;
-            font-size: 14px;
-        }
-        
-        .child-id-badge {
-            background: rgba(102,126,234,0.15);
-            color: #667eea;
-            padding: 6px 16px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            margin-right: 15px;
-        }
-        
-        .child-card.selected .child-id-badge {
-            background: rgba(255,255,255,0.25);
-            color: white;
-        }
-        
-        /* ========== FORM STYLES ========== */
-        .form-label {
-            font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 10px;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-        }
-        
-        .form-label i {
-            margin-right: 10px;
-            color: #667eea;
-            font-size: 1.1rem;
-        }
-        
-        .form-control, .form-select {
-            border: 2.5px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 14px 18px;
-            font-size: 1rem;
-            transition: all 0.3s;
-            background: #fafcff;
-        }
-        
-        .form-control:focus, .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102,126,234,0.15);
-            background: white;
-        }
-        
-        /* ========== BOOK BUTTON ========== */
-        .btn-book {
-            background: linear-gradient(145deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 18px 40px;
-            font-size: 1.3rem;
-            font-weight: 800;
-            border-radius: 60px;
-            width: 100%;
-            transition: all 0.4s;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 30px;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid transparent;
-        }
-        
-        .btn-book:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 25px 45px rgba(102,126,234,0.5);
-            color: white;
-            border: 2px solid white;
-        }
-        
-        .btn-book::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.6s;
-        }
-        
-        .btn-book:hover::before {
-            left: 100%;
-        }
-        
-        /* ========== ALERTS ========== */
-        .alert {
-            border-radius: 18px;
-            padding: 18px 25px;
-            border: none;
-            margin-bottom: 30px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            animation: slideDown 0.5s ease;
-        }
-        
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .alert-success {
-            background: linear-gradient(145deg, #d4edda, #c3e6cb);
-            color: #155724;
-            border-left: 8px solid #28a745;
-        }
-        
-        .alert-danger {
-            background: linear-gradient(145deg, #f8d7da, #f5c6cb);
-            color: #721c24;
-            border-left: 8px solid #dc3545;
-        }
-        
-        /* ========== EMPTY STATE ========== */
-        .empty-state {
-            text-align: center;
-            padding: 60px 30px;
-            background: white;
-            border-radius: 25px;
-            border: 3px dashed #cbd5e0;
-        }
-        
-        .empty-state i {
-            font-size: 5rem;
-            color: #a0b4ff;
-            margin-bottom: 25px;
-        }
-        
-        .empty-state h4 {
-            color: #2d3748;
-            font-weight: 700;
-            margin-bottom: 15px;
-            font-size: 1.8rem;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border: none;
-            padding: 14px 35px;
-            border-radius: 50px;
-            font-weight: 700;
-            transition: all 0.3s;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(102,126,234,0.4);
-        }
-        
-        /* ========== INFO SECTION ========== */
-        .info-section {
-            background: linear-gradient(145deg, #f8faff, #f0f3ff);
-            border-radius: 20px;
-            padding: 25px 30px;
-            margin-top: 40px;
-            border: 2px solid #e2e8ff;
-        }
-        
-        .info-section h5 {
-            color: #667eea;
-            font-weight: 800;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .info-section h5 i {
-            font-size: 1.3rem;
-            margin-right: 12px;
-        }
-        
-        .info-item {
-            display: flex;
-            align-items: center;
+        .approval-alert-header {
+            display: flex; align-items: center; justify-content: space-between;
             margin-bottom: 12px;
-            color: #4a5568;
         }
-        
-        .info-item i {
-            color: #667eea;
-            width: 28px;
-            font-size: 1.1rem;
+        .approval-alert-title {
+            font-size: 15px; font-weight: 800; color: #065f46;
+            display: flex; align-items: center; gap: 8px;
         }
-        
-        /* ========== RESPONSIVE ========== */
-        @media (max-width: 768px) {
-            .card-body { padding: 25px; }
-            .card-header h2 { font-size: 1.6rem; }
-            .child-card { flex-direction: column; text-align: center; }
-            .child-avatar { margin-right: 0; margin-bottom: 15px; }
-            .back-wrapper { flex-direction: column; gap: 15px; }
-            .child-info { flex-direction: column; gap: 8px; }
+        .approval-badge {
+            background: #10b981; color: white;
+            font-size: 10px; font-weight: 700;
+            padding: 2px 8px; border-radius: 20px;
+            letter-spacing: .5px;
         }
-        
-        @media (max-width: 576px) {
-            body { padding: 15px; }
-            .card-header { padding: 25px; }
-            .children-section { padding: 20px; }
+        .approval-close {
+            background: none; border: none; cursor: pointer;
+            color: #6ee7b7; font-size: 18px; font-weight: 700;
+            line-height: 1; padding: 0 4px;
+        }
+        .approval-close:hover { color: #065f46; }
+        .approval-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px; margin-bottom: 14px;
+        }
+        .approval-item { background: white; border-radius: 9px; padding: 10px 13px; }
+        .approval-item-label { font-size: 10.5px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; }
+        .approval-item-val   { font-size: 13.5px; font-weight: 700; color: #1a1a2e; margin-top: 3px; }
+        .conf-code {
+            display: inline-block;
+            background: #1d4ed8; color: white;
+            font-size: 13px; font-weight: 800;
+            padding: 4px 14px; border-radius: 8px;
+            letter-spacing: 1px; font-family: monospace;
+        }
+        .approval-dismiss-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #059669; color: white;
+            padding: 9px 20px; border-radius: 9px;
+            font-size: 13px; font-weight: 700;
+            border: none; cursor: pointer; font-family: 'Inter', sans-serif;
+            transition: all .2s; text-decoration: none;
+        }
+        .approval-dismiss-btn:hover { background: #047857; transform: translateY(-1px); }
+
+        /* MAIN CARD */
+        .form-card {
+            background:#fff; border-radius:16px; border:1px solid #e8eeff;
+            box-shadow:0 2px 12px rgba(59,130,246,.07); padding:36px;
+        }
+
+        /* SECTION TITLE */
+        .section-title {
+            font-size:12px; font-weight:700; color:#6b7280;
+            text-transform:uppercase; letter-spacing:.7px;
+            margin:28px 0 16px; padding-bottom:8px;
+            border-bottom:1px solid #f1f5ff;
+        }
+        .section-title:first-child { margin-top:0; }
+
+        /* FORM GRID */
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+        .form-group { margin-bottom:0; }
+        .form-group.full { grid-column:1/-1; }
+
+        /* LABELS */
+        .field-label { display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:7px; }
+        .field-label .req { color:#ef4444; margin-left:2px; }
+
+        /* INPUTS */
+        input[type="date"], input[type="time"], select, textarea {
+            width:100%; padding:11px 14px;
+            border:1.5px solid #e8eeff; border-radius:10px;
+            font-size:14px; font-family:'Inter',Arial,sans-serif;
+            color:#1a1a2e; background:#fafbff; transition:all .2s; outline:none;
+        }
+        input[type="date"]:focus, input[type="time"]:focus, select:focus, textarea:focus {
+            border-color:#3b82f6; background:#fff;
+            box-shadow:0 0 0 3px rgba(59,130,246,.1);
+        }
+        textarea { min-height:88px; resize:vertical; }
+        select {
+            appearance:none;
+            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat:no-repeat; background-position:right 14px center; padding-right:38px;
+        }
+
+        /* VACCINE INFO BOX */
+        #vaccine-info-box {
+            display:none; margin-top:10px;
+            background:linear-gradient(135deg,#1d4ed8,#3b82f6);
+            border-radius:10px; padding:12px 16px; color:#fff; font-size:13px; line-height:1.5;
+        }
+        #vaccine-info-box strong { display:block; font-size:14px; margin-bottom:4px; }
+
+        /* TIME SLOTS */
+        .time-slots { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+        .time-slot {
+            padding:8px 14px; border:1.5px solid #e8eeff; border-radius:8px;
+            font-size:13px; font-weight:500; color:#4b6cb7;
+            cursor:pointer; transition:all .18s; background:#fafbff;
+        }
+        .time-slot:hover { border-color:#3b82f6; background:#eff6ff; color:#1d4ed8; }
+        .time-slot.selected {
+            background:linear-gradient(135deg,#1d4ed8,#3b82f6);
+            color:#fff; border-color:#1d4ed8;
+            box-shadow:0 3px 10px rgba(29,78,216,.25);
+        }
+
+        /* Time error */
+        .time-error {
+            display:none; color:#dc2626; font-size:12px;
+            margin-top:6px; font-weight:500;
+        }
+
+        /* HINT */
+        .dose-hint { font-size:12px; color:#9ca3af; margin-top:5px; }
+
+        /* SUBMIT BUTTON */
+        .btn-submit {
+            width:100%; padding:14px;
+            background:linear-gradient(135deg,#1d4ed8,#3b82f6);
+            color:#fff; border:none; border-radius:10px;
+            font-size:15px; font-weight:700; cursor:pointer;
+            margin-top:28px; font-family:'Inter',Arial,sans-serif;
+            box-shadow:0 4px 14px rgba(29,78,216,.25); transition:all .2s;
+            display:flex; align-items:center; justify-content:center; gap:8px;
+        }
+        .btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(29,78,216,.35); }
+        .btn-submit:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+
+        /* EMPTY WARN */
+        .empty-warn {
+            text-align:center; padding:55px 30px; background:#fff;
+            border-radius:16px; border:2px dashed #bfdbfe;
+        }
+        .empty-warn .ew-icon { font-size:52px; margin-bottom:14px; display:block; }
+        .empty-warn h3 { font-size:18px; font-weight:700; color:#1a1a2e; margin-bottom:8px; }
+        .empty-warn p  { color:#6b7280; font-size:14px; margin-bottom:20px; }
+        .empty-warn a  {
+            display:inline-flex; align-items:center; gap:6px;
+            background:linear-gradient(135deg,#3b82f6,#1d4ed8); color:#fff;
+            padding:11px 22px; border-radius:10px; text-decoration:none;
+            font-size:14px; font-weight:600;
+            box-shadow:0 4px 14px rgba(29,78,216,.25); transition:all .2s;
+        }
+        .empty-warn a:hover { transform:translateY(-2px); }
+
+        @media(max-width:620px){
+            .navbar { padding:0 16px; }
+            .navbar-brand h2 { display:none; }
+            .page-wrapper { padding:0 14px; }
+            .form-row { grid-template-columns:1fr; }
+            .form-group.full { grid-column:1; }
+            .form-card { padding:20px; }
+            .page-banner { flex-direction:column; gap:10px; }
+            .banner-icon { display:none; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- ===== BACK BUTTON - PARENT DASHBOARD ===== -->
-        <div class="back-wrapper">
-            <div class="d-flex align-items-center">
-                <a href="dashboard.php" class="back-btn">
-                    <i class="fas fa-arrow-left"></i> Back to Dashboard
-                </a>
-                <span class="ms-3 text-muted d-none d-md-inline">
-                    <i class="fas fa-home me-1"></i> Return to Parent Dashboard
-                </span>
-            </div>
-            <div class="page-indicator">
-                <i class="fas fa-calendar-plus"></i> Book New Appointment
-            </div>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <div class="navbar-brand">
+    
+        <h2>Parent_Panel</h2>
+    </div>
+    <div class="navbar-links">
+        <a href="dashboard.php"> Dashboard</a>
+        <a href="my_children.php"> My Children</a>
+        <a href="book_appointment.php" class="active"> Book</a>
+        <a href="my_requests.php"> My Requests</a>
+        <a href="vaccinationhistory.php"> History</a>
+        <a href="myprofile.php"> Profile</a>
+        <a href="../logout.php" class="logout"> Logout</a>
+    </div>
+</div>
+
+<div class="page-wrapper">
+
+    <a href="dashboard.php" class="back-link">← Back to Dashboard</a>
+
+    <!-- BANNER -->
+    <div class="page-banner">
+        <div class="banner-text">
+            <h2>📅 Book Appointment</h2>
+            <p>Fill in the form below to request a vaccination appointment</p>
         </div>
-
-        <!-- ===== MAIN APPOINTMENT CARD ===== -->
-        <div class="appointment-card">
-            <div class="card-header">
-                <h2><i class="fas fa-syringe me-3"></i>Book Vaccination Appointment</h2>
-                <p><i class="fas fa-shield-alt me-2"></i>Secure your child's vaccination slot with our expert doctors</p>
-            </div>
-            
-            <div class="card-body">
-                <!-- Success/Error Messages -->
-                <?php if (isset($success)): ?>
-                    <div class="alert alert-success">
-                        <i class="fas fa-check-circle fa-2x me-3"></i>
-                        <div>
-                            <strong>Success!</strong><br>
-                            <?php echo $success; ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
-                
-                <?php if (isset($error)): ?>
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-circle fa-2x me-3"></i>
-                        <div>
-                            <strong>Error!</strong><br>
-                            <?php echo $error; ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-                <!-- CHILDREN TOGGLE SECTION - SIRF REGISTERED CHILDREN -->
-                <div class="children-section">
-                    <div class="section-title">
-                        <i class="fas fa-child"></i>
-                        <h3>Select Your Child</h3>
-                        <span class="registered-badge">
-                            <i class="fas fa-users me-2"></i><?php echo count($children); ?> Registered
-                        </span>
-                    </div>
-
-                    <?php if (empty($children)): ?>
-                        <!-- NO CHILDREN CASE -->
-                        <div class="empty-state">
-                            <i class="fas fa-child"></i>
-                            <h4>No Registered Children Found!</h4>
-                            <p class="text-muted fs-5 mb-4">Please register your child first to book an appointment.</p>
-                            <a href="add_child.php" class="btn btn-primary btn-lg">
-                                <i class="fas fa-plus-circle me-2"></i>Register Your Child Now
-                            </a>
-                        </div>
-                    <?php else: ?>
-                        <!-- REGISTERED CHILDREN LIST - TOGGLE BAR -->
-                        <form method="POST" action="" id="bookingForm">
-                            <?php foreach ($children as $index => $child): 
-                                $dob = new DateTime($child['date_of_birth']);
-                                $today = new DateTime();
-                                $age = $today->diff($dob);
-                            ?>
-                            <div class="child-card <?php echo $index === 0 ? 'selected' : ''; ?>" 
-                                 onclick="selectChild(this, <?php echo $child['child_id']; ?>)">
-                                <div class="d-flex align-items-center">
-                                    <div class="child-avatar">
-                                        <i class="fas <?php echo ($child['gender'] ?? 'Male') == 'Male' ? 'fa-child' : 'fa-female'; ?>"></i>
-                                    </div>
-                                    <div>
-                                        <div class="child-name"><?php echo htmlspecialchars($child['full_name']); ?></div>
-                                        <div class="child-info">
-                                            <span>
-                                                <i class="fas fa-venus-mars"></i>
-                                                <?php echo $child['gender'] ?? 'N/A'; ?>
-                                            </span>
-                                            <span>
-                                                <i class="fas fa-birthday-cake"></i>
-                                                <?php echo $age->y; ?> years, <?php echo $age->m; ?> months
-                                            </span>
-                                            <span>
-                                                <i class="fas fa-id-card"></i>
-                                                ID: #<?php echo $child['child_id']; ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <span class="child-id-badge me-3">
-                                        <i class="fas fa-check-circle me-1"></i>Active
-                                    </span>
-                                    <span class="radio-indicator"></span>
-                                </div>
-                                <input type="radio" name="child_id" value="<?php echo $child['child_id']; ?>" 
-                                       class="d-none" <?php echo $index === 0 ? 'checked' : ''; ?>>
-                            </div>
-                            <?php endforeach; ?>
-
-                            <!-- APPOINTMENT DETAILS FORM -->
-                            <div class="row mt-5">
-                                <div class="col-md-6 mb-4">
-                                    <label class="form-label">
-                                        <i class="fas fa-syringe"></i> Select Vaccine *
-                                    </label>
-                                    <select class="form-select" name="vaccine_id" required>
-                                        <option value="">-- Choose Vaccine --</option>
-                                        <?php foreach ($simple_vaccines as $v): ?>
-                                            <option value="<?php echo $v['id']; ?>">
-                                                <?php echo $v['name']; ?> - <?php echo $v['age']; ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-6 mb-4">
-                                    <label class="form-label">
-                                        <i class="fas fa-hospital"></i> Select Hospital *
-                                    </label>
-                                    <select class="form-select" name="hospital_id" id="hospitalSelect" required>
-                                        <option value="">-- Choose Hospital --</option>
-                                        <?php foreach ($simple_hospitals as $h): ?>
-                                            <option value="<?php echo $h['id']; ?>">
-                                                <?php echo $h['name']; ?> (<?php echo $h['city']; ?>)
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-6 mb-4">
-                                    <label class="form-label">
-                                        <i class="fas fa-user-md"></i> Select Doctor *
-                                    </label>
-                                    <select class="form-select" name="doctor_id" id="doctorSelect" required>
-                                        <option value="">-- First Select Hospital --</option>
-                                        <?php foreach ($simple_doctors as $d): ?>
-                                            <option value="<?php echo $d['id']; ?>" data-hospital="<?php echo $d['hospital_id']; ?>">
-                                                Dr. <?php echo $d['name']; ?> - <?php echo $d['specialization']; ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-6 mb-4">
-                                    <label class="form-label">
-                                        <i class="fas fa-calendar-alt"></i> Appointment Date *
-                                    </label>
-                                    <input type="date" class="form-control" name="appointment_date" 
-                                           min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>" 
-                                           max="<?php echo date('Y-m-d', strtotime('+1 month')); ?>"
-                                           value="<?php echo date('Y-m-d', strtotime('+3 days')); ?>" 
-                                           required>
-                                </div>
-
-                                <div class="col-md-6 mb-4">
-                                    <label class="form-label">
-                                        <i class="fas fa-clock"></i> Appointment Time *
-                                    </label>
-                                    <select class="form-select" name="appointment_time" required>
-                                        <option value="">-- Select Time --</option>
-                                        <?php foreach ($time_slots as $value => $label): ?>
-                                            <option value="<?php echo $value; ?>"><?php echo $label; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-
-                                <div class="col-12 mb-4">
-                                    <label class="form-label">
-                                        <i class="fas fa-notes-medical"></i> Additional Notes (Optional)
-                                    </label>
-                                    <textarea class="form-control" name="notes" rows="3" 
-                                              placeholder="Any specific concerns, allergies, or previous reactions?"></textarea>
-                                </div>
-                            </div>
-
-                            <!-- BOOK BUTTON -->
-                            <button type="submit" name="book_appointment" class="btn-book">
-                                <i class="fas fa-calendar-check me-2"></i> Book Appointment
-                                <span style="font-size: 0.9rem; display: block; text-transform: none; letter-spacing: normal; margin-top: 5px;">
-                                    <i class="fas fa-shield-alt me-1"></i>Secure & Instant
-                                </span>
-                            </button>
-                        </form>
-
-                        <!-- IMPORTANT INFORMATION -->
-                        <div class="info-section">
-                            <h5><i class="fas fa-info-circle"></i> Important Guidelines</h5>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="info-item">
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Arrive 10-15 minutes before appointment</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <i class="fas fa-id-card"></i>
-                                        <span>Bring vaccination card and documents</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <i class="fas fa-thermometer"></i>
-                                        <span>Don't come if child has fever</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="info-item">
-                                        <i class="fas fa-bell"></i>
-                                        <span>SMS reminder 24 hours before</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <i class="fas fa-file-alt"></i>
-                                        <span>Digital certificate provided</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <i class="fas fa-headset"></i>
-                                        <span>Call for cancellations/changes</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
+        <div class="banner-icon">💉</div>
     </div>
 
-    <!-- JavaScript -->
-    <script>
-    // ===== SELECT CHILD FUNCTION =====
-    function selectChild(element, childId) {
-        document.querySelectorAll('.child-card').forEach(card => {
-            card.classList.remove('selected');
-            let radio = card.querySelector('input[type="radio"]');
-            if (radio) radio.checked = false;
-        });
-        
-        element.classList.add('selected');
-        let radio = element.querySelector('input[type="radio"]');
-        if (radio) radio.checked = true;
+    <!-- APPROVAL ALERTS — shown when hospital approves a request -->
+    <?php foreach($approval_alerts as $alert): ?>
+    <div class="approval-alert" id="alert-<?php echo $alert['notification_id']; ?>">
+        <div class="approval-alert-header">
+            <div class="approval-alert-title">
+                Appointment Approved!
+                <span class="approval-badge">NEW</span>
+            </div>
+            <button class="approval-close" onclick="dismissAlert(<?php echo $alert['notification_id']; ?>)" title="Dismiss">x</button>
+        </div>
+        <div class="approval-grid">
+            <div class="approval-item">
+                <div class="approval-item-label">Child</div>
+                <div class="approval-item-val"><?php echo htmlspecialchars($alert['child_name']); ?></div>
+            </div>
+            <div class="approval-item">
+                <div class="approval-item-label">Vaccine</div>
+                <div class="approval-item-val"><?php echo htmlspecialchars($alert['vaccine_name']); ?></div>
+            </div>
+            <div class="approval-item">
+                <div class="approval-item-label">Hospital</div>
+                <div class="approval-item-val"><?php echo htmlspecialchars($alert['hospital_name']); ?></div>
+            </div>
+            <div class="approval-item">
+                <div class="approval-item-label">Date</div>
+                <div class="approval-item-val"><?php echo date('d M Y', strtotime($alert['appointment_date'])); ?></div>
+            </div>
+            <div class="approval-item">
+                <div class="approval-item-label">Time</div>
+                <div class="approval-item-val"><?php echo date('h:i A', strtotime($alert['appointment_time'])); ?></div>
+            </div>
+            <div class="approval-item">
+                <div class="approval-item-label">Confirmation Code</div>
+                <div class="approval-item-val"><span class="conf-code"><?php echo htmlspecialchars($alert['confirmation_code']); ?></span></div>
+            </div>
+        </div>
+        <form method="POST" style="display:inline;">
+            <input type="hidden" name="dismiss_notification" value="1">
+            <input type="hidden" name="notification_id" value="<?php echo $alert['notification_id']; ?>">
+            <button type="submit" class="approval-dismiss-btn">
+                Mark as Read & Confirm Visit
+            </button>
+        </form>
+    </div>
+    <?php endforeach; ?>
+
+    <!-- FLASH MSG -->
+    <?php if($msg): ?>
+    <div class="alert alert-<?php echo $msg_type === 'success' ? 'success' : 'error'; ?>">
+        <?php echo $msg_type === 'success' ? '' : ''; ?>
+        <?php echo $msg; ?>
+    </div>
+    <?php endif; ?>
+
+    <?php if($children_count == 0): ?>
+    <!-- NO CHILDREN -->
+    <div class="empty-warn">
+        <span class="ew-icon">👶</span>
+        <h3>No Children Registered</h3>
+        <p>Please add a child first before booking an appointment.</p>
+        <a href="add_child.php">➕ Add Child Now</a>
+    </div>
+
+    <?php elseif($hospitals_count == 0): ?>
+    <!-- NO HOSPITALS -->
+    <div class="empty-warn">
+        <span class="ew-icon">🏥</span>
+        <h3>No Hospitals Available</h3>
+        <p>No verified hospitals at the moment. Please try again later.</p>
+        <a href="dashboard.php">🏠 Go to Dashboard</a>
+    </div>
+
+    <?php else: ?>
+    <!-- MAIN FORM -->
+    <div class="form-card">
+        <form action="submit_appointment_request.php" method="POST" id="bookingForm">
+
+            <!-- Child -->
+            <div class="section-title">👶 Select Child</div>
+            <div class="form-row">
+                <div class="form-group full">
+                    <label class="field-label">Child <span class="req">*</span></label>
+                    <select name="child_id" required>
+                        <option value="">-- Select Child --</option>
+                        <?php
+                        mysqli_data_seek($result_children, 0);
+                        while($child = mysqli_fetch_assoc($result_children)):
+                            $ad = floor((time() - strtotime($child['date_of_birth'])) / 86400);
+                            $ay = floor($ad/365); $am = floor(($ad%365)/30);
+                            $as = $ay > 0 ? "{$ay}y {$am}m" : "{$am} months";
+                        ?>
+                        <option value="<?php echo (int)$child['child_id']; ?>">
+                            <?php echo htmlspecialchars($child['full_name']); ?>
+                            (<?php echo $as; ?>, <?php echo htmlspecialchars($child['gender']); ?>)
+                        </option>
+                        <?php endwhile; ?>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Hospital & Vaccine -->
+            <div class="section-title">🏥 Hospital & Vaccine</div>
+            <div class="form-row">
+
+                <div class="form-group full">
+                    <label class="field-label">Hospital <span class="req">*</span></label>
+                    <select name="hospital_id" required>
+                        <option value="">-- Select Hospital --</option>
+                        <?php
+                        mysqli_data_seek($result_hospitals, 0);
+                        while($h = mysqli_fetch_assoc($result_hospitals)):
+                        ?>
+                        <option value="<?php echo (int)$h['hospital_id']; ?>">
+                            🏥 <?php echo htmlspecialchars($h['hospital_name']); ?>
+                            — <?php echo htmlspecialchars($h['city']); ?>
+                        </option>
+                        <?php endwhile; ?>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="field-label">Vaccine <span class="req">*</span></label>
+                    <select name="vaccine_id" id="vaccine_id" required onchange="showVaccineInfo(this)">
+                        <option value="">-- Select Vaccine --</option>
+                        <?php
+                        $vjs = [];
+                        mysqli_data_seek($result_vaccines, 0);
+                        while($v = mysqli_fetch_assoc($result_vaccines)):
+                            $vjs[$v['vaccine_id']] = [
+                                'name' => $v['vaccine_name'],
+                                'code' => $v['vaccine_code'],
+                                'desc' => $v['description'],
+                                'mfr'  => $v['manufacturer']
+                            ];
+                        ?>
+                        <option value="<?php echo (int)$v['vaccine_id']; ?>">
+                            <?php echo htmlspecialchars($v['vaccine_name']); ?>
+                            (<?php echo htmlspecialchars($v['vaccine_code']); ?>)
+                        </option>
+                        <?php endwhile; ?>
+                    </select>
+                    <div id="vaccine-info-box">
+                        <strong id="vi-name"></strong>
+                        <span id="vi-desc"></span>
+                        <span id="vi-mfr" style="display:block;margin-top:3px;font-size:12px;opacity:.85;"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="field-label">Dose Number <span class="req">*</span></label>
+                    <select name="dose_number" required>
+                        <option value="">-- Select Dose --</option>
+                        <option value="1">Dose 1 — First</option>
+                        <option value="2">Dose 2 — Second</option>
+                        <option value="3">Dose 3 — Third</option>
+                        <option value="4">Dose 4 — Booster</option>
+                    </select>
+                    <div class="dose-hint">Select the dose number for this vaccine</div>
+                </div>
+
+            </div>
+
+            <!-- Date & Time -->
+            <div class="section-title">📆 Preferred Date & Time</div>
+            <div class="form-row">
+
+                <div class="form-group">
+                    <label class="field-label">Preferred Date <span class="req">*</span></label>
+                    <input type="date" name="preferred_date" id="preferred_date"
+                           min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>"
+                           max="<?php echo date('Y-m-d', strtotime('+60 days')); ?>"
+                           required>
+                    <div class="dose-hint">Select a date within the next 60 days</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="field-label">Preferred Time <span class="req">*</span></label>
+
+                    <!-- Hidden time input — value set by time slot clicks OR manual input -->
+                    <input type="time" name="preferred_time" id="preferred_time"
+                           style="display:none;" required>
+
+                    <div class="time-slots">
+                        <div class="time-slot" onclick="selectTime('09:00',this)">9:00 AM</div>
+                        <div class="time-slot" onclick="selectTime('10:00',this)">10:00 AM</div>
+                        <div class="time-slot" onclick="selectTime('11:00',this)">11:00 AM</div>
+                        <div class="time-slot" onclick="selectTime('12:00',this)">12:00 PM</div>
+                        <div class="time-slot" onclick="selectTime('14:00',this)">2:00 PM</div>
+                        <div class="time-slot" onclick="selectTime('15:00',this)">3:00 PM</div>
+                        <div class="time-slot" onclick="selectTime('16:00',this)">4:00 PM</div>
+                    </div>
+                    <div class="dose-hint" style="margin-top:8px;">👆 Click a time slot above to select</div>
+                    <div class="time-error" id="timeError">⚠️ Please select a time slot.</div>
+                </div>
+
+            </div>
+
+            <!-- Notes -->
+            <div class="section-title">📝 Additional Notes</div>
+            <div class="form-row">
+                <div class="form-group full">
+                    <label class="field-label">Parent Notes (Optional)</label>
+                    <textarea name="parent_notes"
+                              placeholder="Any special instructions, allergies or concerns for the hospital..."></textarea>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" name="submit_request" value="1" class="btn-submit" id="submitBtn">
+                📅 Submit Appointment Request
+            </button>
+
+        </form>
+    </div>
+    <?php endif; ?>
+
+</div><!-- end page-wrapper -->
+
+<script>
+// ── Vaccine data from PHP ──
+const vaccineData = <?php echo json_encode($vjs ?? []); ?>;
+
+// ── Show vaccine info box ──
+function showVaccineInfo(sel) {
+    const id  = sel.value;
+    const box = document.getElementById('vaccine-info-box');
+    if(id && vaccineData[id]) {
+        const v = vaccineData[id];
+        document.getElementById('vi-name').textContent = v.name + (v.code ? ' (' + v.code + ')' : '');
+        document.getElementById('vi-desc').textContent = v.desc || 'No description available.';
+        document.getElementById('vi-mfr').textContent  = v.mfr  ? '🏭 ' + v.mfr : '';
+        box.style.display = 'block';
+    } else {
+        box.style.display = 'none';
+    }
+}
+
+// ── Select time slot ──
+function selectTime(time, el) {
+    document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('preferred_time').value = time;
+    document.getElementById('timeError').style.display = 'none';
+}
+
+// ── Form submit validation ──
+document.getElementById('bookingForm').addEventListener('submit', function(e) {
+    const timeVal = document.getElementById('preferred_time').value;
+
+    // Check time selected
+    if(!timeVal) {
+        e.preventDefault();
+        document.getElementById('timeError').style.display = 'block';
+        document.querySelector('.time-slots').scrollIntoView({ behavior:'smooth', block:'center' });
+        return;
     }
 
-    // ===== FILTER DOCTORS BY HOSPITAL =====
-    document.getElementById('hospitalSelect')?.addEventListener('change', function() {
-        let hospitalId = this.value;
-        let doctorSelect = document.getElementById('doctorSelect');
-        let options = doctorSelect.querySelectorAll('option');
-        
-        doctorSelect.value = '';
-        
-        options.forEach(option => {
-            if (option.value === '') {
-                option.textContent = hospitalId ? '-- Select Doctor --' : '-- First Select Hospital --';
-                option.disabled = false;
-            } else {
-                let doctorHospital = option.getAttribute('data-hospital');
-                if (hospitalId && doctorHospital === hospitalId) {
-                    option.style.display = '';
-                    option.disabled = false;
-                } else {
-                    option.style.display = 'none';
-                    option.disabled = true;
-                }
-            }
-        });
-    });
+    // Prevent double submit without disabling (disabled removes POST value)
+    const btn = document.getElementById('submitBtn');
+    btn.style.pointerEvents = 'none';
+    btn.style.opacity = '0.6';
+    btn.innerHTML = '⏳ Submitting... Please wait';
+});
+</script>
 
-    // ===== DISABLE SUNDAYS =====
-    document.querySelector('input[name="appointment_date"]')?.addEventListener('change', function() {
-        let selectedDate = new Date(this.value);
-        let day = selectedDate.getDay();
-        
-        if (day === 0) {
-            alert('❌ Appointments are not available on Sundays. Please select another date.');
-            this.value = '<?php echo date('Y-m-d', strtotime('+1 day')); ?>';
-        }
-    });
-
-    // ===== AUTO HIDE ALERTS =====
+<script>
+// Dismiss approval alert via AJAX (mark as read without page reload)
+function dismissAlert(notifId) {
+    const el = document.getElementById('alert-' + notifId);
+    if(!el) return;
+    el.style.transition = 'all .3s ease';
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(-10px)';
     setTimeout(() => {
-        document.querySelectorAll('.alert').forEach(alert => {
-            alert.style.transition = 'opacity 0.5s';
-            alert.style.opacity = '0';
-            setTimeout(() => alert.remove(), 500);
-        });
-    }, 5000);
+        el.remove();
+        // Also POST to mark as read in DB
+        const fd = new FormData();
+        fd.append('dismiss_notification', '1');
+        fd.append('notification_id', notifId);
+        fetch('book_appointment.php', { method:'POST', body: fd });
+    }, 300);
+}
+</script>
 
-    // ===== FORM VALIDATION =====
-    document.getElementById('bookingForm')?.addEventListener('submit', function(e) {
-        let childSelected = document.querySelector('input[name="child_id"]:checked');
-        let vaccine = document.querySelector('select[name="vaccine_id"]').value;
-        let hospital = document.querySelector('select[name="hospital_id"]').value;
-        let doctor = document.querySelector('select[name="doctor_id"]').value;
-        let date = document.querySelector('input[name="appointment_date"]').value;
-        let time = document.querySelector('select[name="appointment_time"]').value;
-        
-        if (!childSelected) {
-            e.preventDefault();
-            alert('❌ Please select a child');
-        } else if (!vaccine) {
-            e.preventDefault();
-            alert('❌ Please select a vaccine');
-        } else if (!hospital) {
-            e.preventDefault();
-            alert('❌ Please select a hospital');
-        } else if (!doctor) {
-            e.preventDefault();
-            alert('❌ Please select a doctor');
-        } else if (!date) {
-            e.preventDefault();
-            alert('❌ Please select appointment date');
-        } else if (!time) {
-            e.preventDefault();
-            alert('❌ Please select appointment time');
-        }
-    });
-    </script>
 </body>
 </html>

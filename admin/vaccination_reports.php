@@ -200,765 +200,242 @@ $completion_rates = getCompletionRateReport($connection, $date_from, $date_to);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vaccination Reports - Admin Panel</title>
     
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <!-- DataTables -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     
-    <!-- Animate.css -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        :root {
-            --primary: #4361ee;
-            --secondary: #3a0ca3;
-            --success: #4cc9f0;
-            --danger: #f72585;
-            --warning: #f8961e;
-            --info: #7209b7;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --gray: #6c757d;
-            --border-radius: 16px;
-            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-        
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-        
-        /* Admin Navbar - FIXED */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',Arial,sans-serif; background:#f0f4ff; color:#1a1a2e; min-height:100vh; }
+
+        /* ── NAVBAR ── */
         .admin-navbar {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 15px 30px;
-            margin: 20px;
-            box-shadow: var(--box-shadow);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 5px solid var(--primary);
-            animation: slideInDown 0.5s ease-out;
-            position: sticky;
-            top: 20px;
-            z-index: 1000;
+            background:#ffffff; border-bottom:2px solid #e8eeff;
+            padding:0 35px; display:flex; justify-content:space-between;
+            align-items:center; height:68px;
+            box-shadow:0 2px 16px rgba(59,130,246,0.08);
+            position:sticky; top:0; z-index:100;
         }
-        
-        .admin-navbar .logo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
+        .admin-navbar .logo { display:flex; align-items:center; gap:10px; }
         .admin-navbar .logo-icon {
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 22px;
+            width:40px; height:40px;
+            background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+            border-radius:10px; display:flex; align-items:center;
+            justify-content:center; font-size:20px;
         }
-        
-        .admin-navbar .logo h2 {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 24px;
-            font-weight: 700;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
+        .admin-navbar .logo h2 { font-size:20px; font-weight:700; color:#1d4ed8; letter-spacing:-0.3px; }
+        .nav-links { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
         .nav-links a {
-            text-decoration: none;
-            color: var(--dark);
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-weight: 500;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
+            color:#4b6cb7; text-decoration:none; padding:8px 14px;
+            border-radius:8px; font-size:13.5px; font-weight:500;
+            transition:all 0.2s; display:flex; align-items:center; gap:6px;
         }
-        
-        .nav-links a i {
-            color: var(--primary);
-            transition: var(--transition);
-        }
-        
-        .nav-links a:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-3px);
-        }
-        
-        .nav-links a:hover i {
-            color: white;
-        }
-        
-        .nav-links a.active {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-        }
-        
-        .nav-links a.active i {
-            color: white;
-        }
-        
-        .nav-links a.logout {
-            background: linear-gradient(135deg, var(--danger), #d0006f);
-            color: white;
-        }
-        
-        .nav-links a.logout i {
-            color: white;
-        }
-        
-        .nav-links a.logout:hover {
-            background: linear-gradient(135deg, #d0006f, var(--danger));
-        }
-        
-        /* Mobile menu toggle - hidden by default */
-        .menu-toggle {
-            display: none;
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1001;
-            background: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-            cursor: pointer;
-            box-shadow: var(--box-shadow);
-        }
-        
-        /* Container */
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        /* Page Header */
+        .nav-links a:hover { background:#eff6ff; color:#1d4ed8; }
+        .nav-links a.active { background:#dbeafe; color:#1d4ed8; font-weight:600; }
+        .nav-links a.logout { background:#fee2e2; color:#dc2626; }
+        .nav-links a.logout:hover { background:#fecaca; }
+
+        /* ── LAYOUT ── */
+        .container { max-width:1400px; margin:32px auto; padding:0 24px; }
+
+        /* ── PAGE HEADER BANNER ── */
         .page-header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: var(--box-shadow);
-            animation: fadeIn 0.6s ease-out;
+            background:linear-gradient(135deg,#1d4ed8 0%,#3b82f6 60%,#60a5fa 100%);
+            border-radius:18px; padding:32px 36px; margin-bottom:28px;
+            color:white; box-shadow:0 8px 32px rgba(59,130,246,0.3);
+            position:relative; overflow:hidden;
         }
-        
-        .page-header h1 {
-            color: var(--dark);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-size: 2.2rem;
-        }
-        
-        .page-header h1 i {
-            color: var(--primary);
-            background: rgba(67, 97, 238, 0.1);
-            padding: 12px;
-            border-radius: 10px;
-        }
-        
-        .page-header p {
-            color: var(--gray);
-            font-size: 16px;
-        }
-        
-        /* Stats Banner */
-        .stats-banner {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 25px 30px;
-            margin-bottom: 30px;
-            box-shadow: var(--box-shadow);
-        }
-        
-        .date-display {
-            color: var(--gray);
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-        
-        /* Filter Section */
+        .page-header::before { content:''; position:absolute; top:-40px; right:-40px; width:200px; height:200px; background:rgba(255,255,255,0.08); border-radius:50%; }
+        .page-header::after  { content:''; position:absolute; bottom:-60px; right:80px; width:160px; height:160px; background:rgba(255,255,255,0.05); border-radius:50%; }
+        .page-header h1 { font-size:26px; font-weight:700; margin-bottom:6px; position:relative; z-index:1; }
+        .page-header p  { font-size:14px; opacity:0.85; position:relative; z-index:1; }
+
+        /* ── FILTER SECTION ── */
         .filter-section {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: var(--box-shadow);
+            background:#ffffff; border-radius:16px; padding:24px 28px;
+            margin-bottom:24px; box-shadow:0 2px 12px rgba(59,130,246,0.07);
+            border:1px solid #e8eeff;
         }
-        
-        .filter-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .filter-title i {
-            color: var(--primary);
-        }
-        
-        .filter-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .filter-group {
-            position: relative;
-        }
-        
-        .filter-group i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray);
-        }
-        
+        .filter-title { font-size:15px; font-weight:700; color:#1a1a2e; margin-bottom:18px; }
+        .filter-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:16px; }
+        .filter-group { position:relative; }
         .filter-input, .filter-select {
-            width: 100%;
-            padding: 12px 20px 12px 45px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 14px;
-            transition: var(--transition);
+            width:100%; padding:10px 14px;
+            border:1.5px solid #e8eeff; border-radius:8px;
+            font-size:13.5px; font-family:'Inter',Arial,sans-serif;
+            background:#f8faff; color:#1a1a2e; transition:all 0.2s;
         }
-        
-        .filter-input:focus, .filter-select:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-        }
-        
-        .filter-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: flex-end;
-        }
-        
+        .filter-input:focus, .filter-select:focus { border-color:#3b82f6; outline:none; box-shadow:0 0 0 3px rgba(59,130,246,0.1); background:white; }
+        .filter-actions { display:flex; gap:12px; justify-content:flex-end; flex-wrap:wrap; }
+
+        /* ── BUTTONS ── */
         .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            padding:10px 20px; border:none; border-radius:8px;
+            font-weight:600; cursor:pointer; transition:all 0.22s;
+            display:inline-flex; align-items:center; gap:8px;
+            font-size:13.5px; font-family:'Inter',Arial,sans-serif;
+            text-decoration:none;
         }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 20px rgba(67, 97, 238, 0.4);
-        }
-        
-        .btn-secondary {
-            background: #f3f4f6;
-            color: var(--gray);
-        }
-        
-        .btn-secondary:hover {
-            background: #e5e7eb;
-        }
-        
-        .btn-export {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-        
-        .btn-export:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
-        }
-        
-        /* Report Cards */
-        .report-section {
-            margin-bottom: 40px;
-        }
-        
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .section-title i {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px;
-            border-radius: 10px;
-        }
-        
-        .report-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-        
-        .report-card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            box-shadow: var(--box-shadow);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .report-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        }
-        
-        .report-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-        }
-        
-        .report-card .card-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-            color: white;
-            font-size: 24px;
-        }
-        
-        .report-card h3 {
-            font-size: 2rem;
-            color: var(--dark);
-            margin-bottom: 5px;
-        }
-        
-        .report-card p {
-            color: var(--gray);
-            font-size: 14px;
-        }
-        
-        /* Charts Grid */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .chart-card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            box-shadow: var(--box-shadow);
-        }
-        
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .chart-header h3 {
-            color: var(--dark);
-            font-size: 1.2rem;
-            font-weight: 700;
-        }
-        
-        .chart-container {
-            height: 300px;
-            position: relative;
-        }
-        
-        /* Table Card */
-        .table-card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            box-shadow: var(--box-shadow);
-            margin-bottom: 30px;
-        }
-        
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .table-header h3 {
-            color: var(--dark);
-            font-size: 1.2rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .badge-count {
-            background: #f3f4f6;
-            padding: 5px 15px;
-            border-radius: 20px;
-            color: var(--gray);
-            font-size: 14px;
-        }
-        
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .data-table thead {
-            background: #f8fafc;
-        }
-        
-        .data-table th {
-            padding: 15px;
-            text-align: left;
-            color: #64748b;
-            font-weight: 600;
-            font-size: 13px;
-            text-transform: uppercase;
-            border-bottom: 2px solid #e2e8f0;
-        }
-        
-        .data-table tbody tr {
-            border-bottom: 1px solid #f1f5f9;
-            transition: var(--transition);
-        }
-        
-        .data-table tbody tr:hover {
-            background: #f8fafc;
-        }
-        
-        .data-table td {
-            padding: 15px;
-            color: #334155;
-            font-size: 14px;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e9ecef;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border-radius: 4px;
-        }
-        
-        /* Pending Summary */
-        .pending-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            background: #fef3c7;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-bottom: 30px;
-            border-left: 4px solid #f59e0b;
-        }
-        
-        .pending-item {
-            text-align: center;
-        }
-        
-        .pending-item h4 {
-            color: #92400e;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-        
-        .pending-item .value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #b45309;
-        }
-        
-        /* Export Options */
-        .export-options {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
+        .btn-primary { background:linear-gradient(135deg,#3b82f6,#1d4ed8); color:white; box-shadow:0 4px 14px rgba(29,78,216,0.2); }
+        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(29,78,216,0.3); color:white; }
+        .btn-secondary { background:#f8faff; color:#4b6cb7; border:1.5px solid #e8eeff; }
+        .btn-secondary:hover { background:#eff6ff; color:#1d4ed8; }
+
+        /* ── EXPORT BUTTONS ── */
+        .export-options { display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap; }
         .export-btn {
-            padding: 10px 20px;
-            background: #f3f4f6;
-            border: none;
-            border-radius: 30px;
-            color: var(--dark);
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            padding:8px 18px; background:#ffffff; border:1.5px solid #e8eeff;
+            border-radius:8px; color:#4b6cb7; font-weight:600; font-size:13px;
+            cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:7px;
+            font-family:'Inter',Arial,sans-serif;
         }
-        
-        .export-btn:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-3px);
+        .export-btn:hover { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+
+        /* ── PENDING SUMMARY ── */
+        .pending-summary {
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+            gap:16px; background:#fffbeb; border-radius:14px;
+            padding:20px 24px; margin-bottom:24px; border-left:4px solid #f59e0b;
+            border:1px solid #fde68a;
         }
-        
-        /* Animations */
-        @keyframes slideInDown {
-            from { 
-                opacity: 0; 
-                transform: translateY(-30px); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0); 
-            }
+        .pending-item { text-align:center; }
+        .pending-item h4 { color:#92400e; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:6px; }
+        .pending-item .value { font-size:28px; font-weight:700; color:#b45309; }
+
+        /* ── OVERVIEW CARDS ── */
+        .report-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-bottom:24px; }
+        .report-card {
+            background:#ffffff; border-radius:16px; padding:24px;
+            box-shadow:0 2px 12px rgba(59,130,246,0.07);
+            border:1px solid #e8eeff; transition:transform 0.2s,box-shadow 0.2s;
+            display:flex; align-items:center; gap:16px;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .report-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(59,130,246,0.13); }
+        .card-icon { width:56px; height:56px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+        .card-info h3 { font-size:30px; font-weight:700; color:#1d4ed8; line-height:1; margin-bottom:4px; }
+        .card-info p  { font-size:12.5px; color:#6b7280; font-weight:500; }
+
+        /* ── CHARTS ── */
+        .charts-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:24px; margin-bottom:24px; }
+        .chart-card {
+            background:#ffffff; border-radius:16px; padding:24px;
+            box-shadow:0 2px 12px rgba(59,130,246,0.07); border:1px solid #e8eeff;
         }
-        
-        @keyframes fadeInUp {
-            from { 
-                opacity: 0; 
-                transform: translateY(30px); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0); 
-            }
+        .chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+        .chart-header h3 { color:#1a1a2e; font-size:15px; font-weight:700; }
+        .chart-container { height:280px; position:relative; }
+
+        /* ── TABLE CARDS ── */
+        .table-card {
+            background:#ffffff; border-radius:16px; padding:24px;
+            box-shadow:0 2px 12px rgba(59,130,246,0.07);
+            border:1px solid #e8eeff; margin-bottom:24px;
         }
-        
-        /* Footer */
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: rgba(255, 255, 255, 0.7);
-            margin-top: 30px;
+        .table-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid #f1f5ff; }
+        .table-header h3 { color:#1a1a2e; font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px; }
+        .badge-count { background:#eff6ff; padding:4px 12px; border-radius:20px; color:#1d4ed8; font-size:12px; font-weight:600; }
+
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table thead th {
+            background:#f8faff; padding:12px 16px; text-align:left;
+            font-size:11.5px; font-weight:600; color:#6b7280;
+            text-transform:uppercase; letter-spacing:0.5px;
+            border-bottom:1px solid #e8eeff;
         }
-        
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .admin-navbar {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .nav-links {
-                justify-content: center;
-            }
+        .data-table tbody tr { border-bottom:1px solid #f4f6ff; transition:background 0.15s; }
+        .data-table tbody tr:last-child { border-bottom:none; }
+        .data-table tbody tr:hover td { background:#f8faff; }
+        .data-table td { padding:13px 16px; color:#374151; font-size:13.5px; }
+
+        /* ── PROGRESS BAR ── */
+        .progress-bar { width:100%; height:7px; background:#e8eeff; border-radius:4px; overflow:hidden; margin-bottom:3px; }
+        .progress-fill { height:100%; background:linear-gradient(90deg,#3b82f6,#1d4ed8); border-radius:4px; }
+
+        /* ── DATATABLES OVERRIDE ── */
+        .dataTables_wrapper .dataTables_filter input { border:1.5px solid #e8eeff; border-radius:8px; padding:6px 12px; font-family:'Inter',Arial,sans-serif; }
+        .dataTables_wrapper .dataTables_filter input:focus { border-color:#3b82f6; outline:none; }
+        .dataTables_wrapper .dataTables_length select { border:1.5px solid #e8eeff; border-radius:8px; padding:4px 8px; font-family:'Inter',Arial,sans-serif; }
+        table.dataTable thead th { background:#f8faff !important; color:#6b7280 !important; font-size:11.5px; }
+        table.dataTable.no-footer { border-bottom:1px solid #e8eeff; }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background:linear-gradient(135deg,#3b82f6,#1d4ed8) !important;
+            color:white !important; border:none !important; border-radius:6px !important;
         }
-        
-        @media (max-width: 768px) {
-            .menu-toggle {
-                display: flex;
-            }
-            
-            .admin-navbar {
-                position: fixed;
-                top: 0;
-                left: -100%;
-                width: 80%;
-                height: 100vh;
-                margin: 0;
-                border-radius: 0;
-                flex-direction: column;
-                justify-content: flex-start;
-                padding-top: 80px;
-                transition: left 0.3s ease;
-                z-index: 999;
-            }
-            
-            .admin-navbar.active {
-                left: 0;
-            }
-            
-            .nav-links {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .nav-links a {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .container {
-                padding: 0 10px;
-                margin-top: 70px;
-            }
-            
-            .page-header {
-                padding: 20px;
-            }
-            
-            .filter-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .report-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background:#eff6ff !important; color:#1d4ed8 !important; border-color:#bfdbfe !important; border-radius:6px !important;
         }
-        
-        @media (max-width: 480px) {
-            .report-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .filter-actions {
-                flex-direction: column;
-            }
-            
-            .export-options {
-                flex-direction: column;
-            }
+
+        /* ── RESPONSIVE ── */
+        @media(max-width:1200px) {
+            .report-grid { grid-template-columns:repeat(2,1fr); }
+            .charts-grid { grid-template-columns:1fr; }
+            .admin-navbar { height:auto; padding:12px 20px; flex-direction:column; gap:10px; }
+        }
+        @media(max-width:768px) {
+            .report-grid { grid-template-columns:repeat(2,1fr); }
+            .filter-grid { grid-template-columns:1fr; }
+            .container { padding:0 14px; }
+        }
+        @media(max-width:480px) {
+            .report-grid { grid-template-columns:1fr; }
+            .filter-actions { flex-direction:column; }
+        }
+
+        @media print {
+            .admin-navbar, .filter-section, .export-options { display:none; }
+            body { background:white; }
+            .table-card, .chart-card { box-shadow:none; border:1px solid #ddd; }
         }
     </style>
 </head>
 <body>
-    <!-- Mobile Menu Toggle -->
-    <div class="menu-toggle" id="menuToggle">
-        <i class="fas fa-bars"></i>
-    </div>
-    
-    <!-- Admin Navbar - FIXED -->
-    <nav class="admin-navbar" id="adminNavbar">
+    <!-- Admin Navbar -->
+    <nav class="admin-navbar">
         <div class="logo">
-            <div class="logo-icon">
-                <i class="fas fa-shield-alt"></i>
-            </div>
-            <h2>Vaccine<span style="color: var(--primary);">Admin</span></h2>
+            <div class="logo-icon">🛡️</div>
+            <h2>Admin Panel</h2>
         </div>
         <div class="nav-links">
-            <a href="dashboard.php">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </a>
-            <a href="manage_children.php">
-                <i class="fas fa-child"></i> Children
-            </a>
-            <a href="manage_hospitals.php">
-                <i class="fas fa-hospital"></i> Hospitals
-            </a>
-            <a href="appointment_requests.php">
-                <i class="fas fa-calendar-check"></i> Requests
-            </a>
-            <a href="managevaccines.php">
-                <i class="fas fa-syringe"></i> Vaccines
-            </a>
-            <a href="bookingdetail.php">
-                <i class="fas fa-calendar-alt"></i> Bookings
-            </a>
-            <a href="vaccination_reports.php" class="active">
-                <i class="fas fa-chart-bar"></i> Reports
-            </a>
-            <a href="system_settings.php">
-                <i class="fas fa-cog"></i> Settings
-            </a>
-            <a href="../logout.php" class="logout">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
+            <a href="dashboard.php">Dashboard</a>
+            <a href="manage_children.php"> Children</a>
+            <a href="manage_hospitals.php"> Hospitals</a>
+            <a href="appointment_requests.php"> Requests</a>
+            <a href="managevaccines.php"> Vaccines</a>
+            <a href="bookingdetail.php"> Bookings</a>
+            <a href="vaccination_reports.php" class="active"> Reports</a>
+            <a href="system_settings.php"> Settings</a>
+            <a href="../logout.php" class="logout">Logout</a>
         </div>
     </nav>
 
     <div class="container">
         <!-- Page Header -->
-        <div class="page-header animate__animated animate__fadeIn">
-            <h1>
-                <i class="fas fa-chart-bar"></i>
-                Vaccination Reports
-            </h1>
+        <div class="page-header">
+            <h1>📊 Vaccination Reports</h1>
             <p>Detailed analytics and insights for your vaccination program</p>
         </div>
         
         <!-- Filter Section -->
-        <div class="filter-section animate__animated animate__fadeIn">
-            <div class="filter-title">
-                <i class="fas fa-filter"></i> Filter Reports
-            </div>
+        <div class="filter-section">
+            <div class="filter-title">🔍 Filter Reports</div>
             
             <form method="GET" action="">
                 <div class="filter-grid">
                     <div class="filter-group">
-                        <i class="fas fa-calendar"></i>
-                        <input type="date" class="filter-input" name="date_from" value="<?php echo $date_from; ?>">
+                            <input type="date" class="filter-input" name="date_from" value="<?php echo $date_from; ?>">
                     </div>
                     
                     <div class="filter-group">
-                        <i class="fas fa-calendar-check"></i>
-                        <input type="date" class="filter-input" name="date_to" value="<?php echo $date_to; ?>">
+                            <input type="date" class="filter-input" name="date_to" value="<?php echo $date_to; ?>">
                     </div>
                     
                     <div class="filter-group">
-                        <i class="fas fa-hospital"></i>
-                        <select class="filter-select" name="hospital_id">
+                            <select class="filter-select" name="hospital_id">
                             <option value="0">All Hospitals</option>
                             <?php 
                             mysqli_data_seek($hospitals, 0);
@@ -972,8 +449,7 @@ $completion_rates = getCompletionRateReport($connection, $date_from, $date_to);
                     </div>
                     
                     <div class="filter-group">
-                        <i class="fas fa-syringe"></i>
-                        <select class="filter-select" name="vaccine_id">
+                            <select class="filter-select" name="vaccine_id">
                             <option value="0">All Vaccines</option>
                             <?php 
                             mysqli_data_seek($vaccines, 0);
@@ -988,31 +464,21 @@ $completion_rates = getCompletionRateReport($connection, $date_from, $date_to);
                 </div>
                 
                 <div class="filter-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search"></i> Generate Report
-                    </button>
-                    <a href="vaccination_reports.php" class="btn btn-secondary">
-                        <i class="fas fa-redo"></i> Reset
-                    </a>
+                    <button type="submit" class="btn btn-primary">🔍 Generate Report</button>
+                    <a href="vaccination_reports.php" class="btn btn-secondary">↺ Reset</a>
                 </div>
             </form>
         </div>
         
         <!-- Export Options -->
         <div class="export-options">
-            <button class="export-btn" onclick="exportToPDF()">
-                <i class="fas fa-file-pdf"></i> Export as PDF
-            </button>
-            <button class="export-btn" onclick="exportToExcel()">
-                <i class="fas fa-file-excel"></i> Export as Excel
-            </button>
-            <button class="export-btn" onclick="printReport()">
-                <i class="fas fa-print"></i> Print Report
-            </button>
+            <button class="export-btn" onclick="exportToPDF()">📄 Export as PDF</button>
+            <button class="export-btn" onclick="exportToExcel()">📊 Export as Excel</button>
+            <button class="export-btn" onclick="printReport()">🖨️ Print Report</button>
         </div>
         
         <!-- Pending Summary -->
-        <div class="pending-summary animate__animated animate__fadeInUp">
+        <div class="pending-summary">
             <div class="pending-item">
                 <h4>Total Pending</h4>
                 <div class="value"><?php echo $pending_summary['total_pending']; ?></div>
@@ -1033,33 +499,29 @@ $completion_rates = getCompletionRateReport($connection, $date_from, $date_to);
         
         <!-- Overview Cards -->
         <div class="report-grid">
-            <div class="report-card animate__animated animate__fadeInUp">
+            <div class="report-card">
                 <div class="card-icon" style="background: linear-gradient(135deg, #4361ee, #3a0ca3);">
-                    <i class="fas fa-calendar-check"></i>
                 </div>
                 <h3><?php echo $overview['total_bookings']; ?></h3>
                 <p>Total Bookings</p>
             </div>
             
-            <div class="report-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s">
+            <div class="report-card" style="animation-delay: 0.1s">
                 <div class="card-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
-                    <i class="fas fa-check-circle"></i>
                 </div>
                 <h3><?php echo $overview['completed_vaccinations']; ?></h3>
                 <p>Completed Vaccinations</p>
             </div>
             
-            <div class="report-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+            <div class="report-card" style="animation-delay: 0.2s">
                 <div class="card-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                    <i class="fas fa-clock"></i>
                 </div>
                 <h3><?php echo $overview['pending_requests']; ?></h3>
                 <p>Pending Requests</p>
             </div>
             
-            <div class="report-card animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
+            <div class="report-card" style="animation-delay: 0.3s">
                 <div class="card-icon" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
-                    <i class="fas fa-child"></i>
                 </div>
                 <h3><?php echo $overview['new_children']; ?></h3>
                 <p>New Children</p>
@@ -1071,7 +533,7 @@ $completion_rates = getCompletionRateReport($connection, $date_from, $date_to);
             <!-- Vaccine Distribution Chart -->
             <div class="chart-card">
                 <div class="chart-header">
-                    <h3><i class="fas fa-chart-pie"></i> Vaccine Distribution</h3>
+                    <h3>🍩 Vaccine Distribution</h3>
                 </div>
                 <div class="chart-container">
                     <canvas id="vaccineChart"></canvas>
@@ -1081,7 +543,7 @@ $completion_rates = getCompletionRateReport($connection, $date_from, $date_to);
             <!-- Daily Trend Chart -->
             <div class="chart-card">
                 <div class="chart-header">
-                    <h3><i class="fas fa-chart-line"></i> Daily Vaccination Trend</h3>
+                    <h3>📈 Daily Vaccination Trend</h3>
                 </div>
                 <div class="chart-container">
                     <canvas id="trendChart"></canvas>
@@ -1092,7 +554,7 @@ $completion_rates = getCompletionRateReport($connection, $date_from, $date_to);
         <!-- Age Group Report -->
         <div class="table-card">
             <div class="table-header">
-                <h3><i class="fas fa-users"></i> Children by Age Group</h3>
+                <h3>👥 Children by Age Group</h3>
                 <span class="badge-count">Age Distribution</span>
             </div>
             
@@ -1140,7 +602,7 @@ $completion_rates = getCompletionRateReport($connection, $date_from, $date_to);
         <!-- Vaccine Wise Report -->
         <div class="table-card">
             <div class="table-header">
-                <h3><i class="fas fa-syringe"></i> Vaccine Wise Report</h3>
+                <h3>💉 Vaccine Wise Report</h3>
                 <span class="badge-count"><?php echo mysqli_num_rows($vaccine_report); ?> Vaccines</span>
             </div>
             
@@ -1184,7 +646,7 @@ $completion_rates = getCompletionRateReport($connection, $date_from, $date_to);
         <!-- Hospital Wise Report -->
         <div class="table-card">
             <div class="table-header">
-                <h3><i class="fas fa-hospital"></i> Hospital Performance Report</h3>
+                <h3>🏥 Hospital Performance Report</h3>
                 <span class="badge-count"><?php echo mysqli_num_rows($hospital_report); ?> Hospitals</span>
             </div>
             
@@ -1230,7 +692,7 @@ $completion_rates = getCompletionRateReport($connection, $date_from, $date_to);
         <!-- Daily Trend Table -->
         <div class="table-card">
             <div class="table-header">
-                <h3><i class="fas fa-calendar-alt"></i> Daily Vaccination Trend</h3>
+                <h3>📅 Daily Vaccination Trend</h3>
                 <span class="badge-count">Last <?php echo mysqli_num_rows($daily_trend); ?> Days</span>
             </div>
             
@@ -1264,7 +726,7 @@ $completion_rates = getCompletionRateReport($connection, $date_from, $date_to);
         <!-- Completion Rate Report -->
         <div class="table-card">
             <div class="table-header">
-                <h3><i class="fas fa-percentage"></i> Monthly Approval Rates</h3>
+                <h3>📊 Monthly Approval Rates</h3>
                 <span class="badge-count">Trend Analysis</span>
             </div>
             
@@ -1304,18 +766,9 @@ $completion_rates = getCompletionRateReport($connection, $date_from, $date_to);
             </div>
         </div>
         
-        <!-- Footer -->
-        <div class="footer">
-            <p>© <?php echo date('Y'); ?> Child Vaccination System. All rights reserved.</p>
-        </div>
     </div>
     
     <script>
-        // Mobile menu toggle
-        document.getElementById('menuToggle').addEventListener('click', function() {
-            document.getElementById('adminNavbar').classList.toggle('active');
-        });
-        
         // Initialize DataTables
         $(document).ready(function() {
             $('#vaccineTable').DataTable({
@@ -1362,8 +815,8 @@ $completion_rates = getCompletionRateReport($connection, $date_from, $date_to);
                     datasets: [{
                         data: <?php echo json_encode($vaccine_counts); ?>,
                         backgroundColor: [
-                            '#4361ee', '#3a0ca3', '#f72585', '#4cc9f0', 
-                            '#f8961e', '#7209b7', '#10b981', '#f59e0b'
+                            '#1d4ed8', '#3b82f6', '#60a5fa', '#93c5fd',
+                            '#2563eb', '#1e40af', '#7c3aed', '#10b981'
                         ],
                         borderWidth: 2,
                         borderColor: 'white'
@@ -1401,12 +854,12 @@ $completion_rates = getCompletionRateReport($connection, $date_from, $date_to);
                     datasets: [{
                         label: 'Daily Vaccinations',
                         data: <?php echo json_encode($daily_counts); ?>,
-                        borderColor: '#4361ee',
-                        backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4,
-                        pointBackgroundColor: '#4361ee',
+                        pointBackgroundColor: '#3b82f6',
                         pointBorderColor: 'white',
                         pointBorderWidth: 2,
                         pointRadius: 4
@@ -1446,16 +899,6 @@ $completion_rates = getCompletionRateReport($connection, $date_from, $date_to);
         function printReport() {
             window.print();
         }
-        
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const navbar = document.getElementById('adminNavbar');
-            const toggle = document.getElementById('menuToggle');
-            
-            if (!navbar.contains(event.target) && !toggle.contains(event.target)) {
-                navbar.classList.remove('active');
-            }
-        });
         
         // Add animation to cards
         const cards = document.querySelectorAll('.report-card');

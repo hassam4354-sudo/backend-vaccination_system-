@@ -108,129 +108,72 @@ $r_logs = mysqli_query($connection, $q_logs);
         }
 
         :root {
-            --primary: #4361ee;
-            --secondary: #3a0ca3;
+            --primary: #1a6fc4;
+            --secondary: #1155a0;
             --success: #10b981;
-            --danger: #f72585;
+            --danger: #ef4444;
             --warning: #f8961e;
-            --light: #f8f9fa;
+            --light: #f5f7fa;
             --dark: #212529;
-            --gray: #6c757d;
+            --gray: #6b7a99;
             --border-radius: 16px;
-            --box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            --box-shadow: 0 10px 30px rgba(26,111,196,0.10);
             --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #e8f1fb 0%, #dceeff 100%);
             min-height: 100vh;
             color: #333;
         }
 
         /* ===== LAYOUT ===== */
         .dashboard-layout {
-            display: grid;
-            grid-template-columns: 250px 1fr;
+            display: block;
             min-height: 100vh;
         }
 
-        /* ===== SIDEBAR ===== */
-        .sidebar {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            padding: 30px 20px;
-            border-right: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 5px 0 30px rgba(0,0,0,0.1);
+        /* ===== TOP NAVBAR ===== */
+        .admin-navbar {
+            background: #ffffff;
+            border-bottom: 2px solid #e8eeff;
+            padding: 0 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 68px;
+            box-shadow: 0 2px 16px rgba(26,111,196,0.08);
             position: sticky;
             top: 0;
-            height: 100vh;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
+            z-index: 100;
         }
-
-        .sidebar-header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid rgba(67,97,238,0.1);
-        }
-
-        .sidebar-header h2 {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .sidebar-header p { color: var(--gray); font-size: 12px; margin-top: 5px; }
-
-        .admin-profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 15px;
-            background: rgba(67,97,238,0.1);
-            border-radius: 12px;
-            margin-bottom: 25px;
-        }
-
-        .admin-avatar {
-            width: 45px; height: 45px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 50%;
+        .admin-navbar .logo { display: flex; align-items: center; gap: 10px; }
+        .admin-navbar .logo-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, #1a6fc4, #1155a0);
+            border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 18px;
-            flex-shrink: 0;
+            font-size: 20px;
         }
-
-        .admin-info h4 { color: var(--dark); font-size: 14px; margin-bottom: 3px; }
-        .admin-info p  { color: var(--primary); font-size: 11px; font-weight: 600; }
-
-        .nav-menu { display: flex; flex-direction: column; gap: 6px; flex: 1; }
-
-        .nav-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 13px 15px;
-            border-radius: 12px;
-            color: var(--dark);
-            text-decoration: none;
-            transition: var(--transition);
-            font-size: 14px;
+        .admin-navbar .logo h2 { font-size: 20px; font-weight: 700; color: #1155a0; letter-spacing: -0.3px; }
+        .nav-links { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .nav-links a {
+            color: #4b6cb7; text-decoration: none; padding: 8px 14px;
+            border-radius: 8px; font-size: 13.5px; font-weight: 500;
+            transition: all 0.2s; display: flex; align-items: center; gap: 6px;
         }
-
-        .nav-item:hover { background: rgba(67,97,238,0.1); transform: translateX(5px); }
-
-        .nav-item.active {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: white;
-            box-shadow: 0 5px 20px rgba(67,97,238,0.3);
-        }
-
-        .nav-item i { width: 18px; text-align: center; }
-
-        .logout-btn {
-            margin-top: 20px;
-            background: rgba(247,37,133,0.1);
-            color: var(--danger);
-            border: none; border-radius: 12px;
-            padding: 13px 15px;
-            display: flex; align-items: center; gap: 12px;
-            cursor: pointer;
-            transition: var(--transition);
-            width: 100%; font-size: 14px;
-        }
-
-        .logout-btn:hover { background: var(--danger); color: white; transform: translateY(-2px); }
+        .nav-links a:hover { background: #eff6ff; color: #1155a0; }
+        .nav-links a.active { background: #dbeafe; color: #1155a0; font-weight: 600; }
+        .nav-links a.logout { background: #fee2e2; color: #dc2626; }
+        .nav-links a.logout:hover { background: #fecaca; }
 
         /* ===== MAIN CONTENT ===== */
         .main-content { padding: 30px; overflow-y: auto; }
 
         .page-header { margin-bottom: 30px; }
 
-        .page-header h1 { color: white; font-size: 2rem; margin-bottom: 8px; }
-        .page-header p  { color: rgba(255,255,255,0.8); font-size: 1rem; }
+        .page-header h1 { color: var(--secondary); font-size: 2rem; margin-bottom: 8px; }
+        .page-header p  { color: var(--gray); font-size: 1rem; }
 
         /* ===== ALERT MESSAGES ===== */
         .alert {
@@ -248,11 +191,11 @@ $r_logs = mysqli_query($connection, $q_logs);
         /* ===== TABS ===== */
         .settings-tabs {
             display: flex; gap: 5px;
-            background: rgba(255,255,255,0.15);
+            background: rgba(26,111,196,0.08);
             border-radius: 14px;
             padding: 6px;
             margin-bottom: 25px;
-            backdrop-filter: blur(10px);
+            border: 1px solid rgba(26,111,196,0.12);
             flex-wrap: wrap;
         }
 
@@ -262,7 +205,7 @@ $r_logs = mysqli_query($connection, $q_logs);
             padding: 11px 20px;
             border: none; border-radius: 10px;
             background: transparent;
-            color: rgba(255,255,255,0.8);
+            color: var(--gray);
             cursor: pointer;
             transition: var(--transition);
             font-size: 13px;
@@ -271,12 +214,12 @@ $r_logs = mysqli_query($connection, $q_logs);
             justify-content: center;
         }
 
-        .tab-btn:hover  { background: rgba(255,255,255,0.15); color: white; }
+        .tab-btn:hover  { background: rgba(26,111,196,0.1); color: var(--primary); }
 
         .tab-btn.active {
-            background: white;
-            color: var(--primary);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(26,111,196,0.3);
         }
 
         /* ===== CARDS ===== */
@@ -302,11 +245,11 @@ $r_logs = mysqli_query($connection, $q_logs);
             flex-shrink: 0;
         }
 
-        .icon-blue   { background: rgba(67,97,238,0.1);  color: var(--primary); }
+        .icon-blue   { background: rgba(26,111,196,0.1);  color: var(--primary); }
         .icon-green  { background: rgba(16,185,129,0.1); color: var(--success); }
-        .icon-red    { background: rgba(247,37,133,0.1); color: var(--danger);  }
+        .icon-red    { background: rgba(239,68,68,0.1);  color: var(--danger);  }
         .icon-orange { background: rgba(248,150,30,0.1); color: var(--warning); }
-        .icon-purple { background: rgba(114,9,183,0.1);  color: #7209b7;        }
+        .icon-purple { background: rgba(26,111,196,0.1); color: var(--primary); }
 
         .card-header h3 { font-size: 16px; color: var(--dark); margin: 0; }
         .card-header p  { font-size: 12px; color: var(--gray); margin: 0; }
@@ -344,7 +287,7 @@ $r_logs = mysqli_query($connection, $q_logs);
         .form-group select:focus,
         .form-group textarea:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67,97,238,0.1);
+            box-shadow: 0 0 0 3px rgba(26,111,196,0.1);
         }
 
         .form-group textarea { resize: vertical; min-height: 90px; }
@@ -359,17 +302,17 @@ $r_logs = mysqli_query($connection, $q_logs);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(135deg, #3b8de0, var(--primary));
             color: white;
-            box-shadow: 0 4px 15px rgba(67,97,238,0.3);
+            box-shadow: 0 4px 15px rgba(26,111,196,0.3);
         }
 
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(67,97,238,0.4); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(26,111,196,0.4); }
 
         .btn-danger {
-            background: linear-gradient(135deg, var(--danger), #b5179e);
+            background: linear-gradient(135deg, var(--danger), #dc2626);
             color: white;
-            box-shadow: 0 4px 15px rgba(247,37,133,0.3);
+            box-shadow: 0 4px 15px rgba(239,68,68,0.3);
         }
 
         .btn-danger:hover { transform: translateY(-2px); }
@@ -390,7 +333,7 @@ $r_logs = mysqli_query($connection, $q_logs);
         }
 
         .info-item {
-            background: #f8fafc;
+            background: #f0f6ff;
             border-radius: 12px;
             padding: 18px;
             border-left: 4px solid var(--primary);
@@ -433,9 +376,9 @@ $r_logs = mysqli_query($connection, $q_logs);
             font-weight: 600;
         }
 
-        .badge-blue   { background: rgba(67,97,238,0.1);  color: var(--primary); }
+        .badge-blue   { background: rgba(26,111,196,0.1);  color: var(--primary); }
         .badge-green  { background: rgba(16,185,129,0.1); color: var(--success); }
-        .badge-red    { background: rgba(247,37,133,0.1); color: var(--danger);  }
+        .badge-red    { background: rgba(239,68,68,0.1);  color: var(--danger);  }
         .badge-orange { background: rgba(248,150,30,0.1); color: var(--warning); }
 
         /* ===== TOGGLE ===== */
@@ -477,10 +420,10 @@ $r_logs = mysqli_query($connection, $q_logs);
 
         /* ===== DANGER ZONE ===== */
         .danger-zone {
-            border: 2px dashed rgba(247,37,133,0.3);
+            border: 2px dashed rgba(239,68,68,0.3);
             border-radius: 14px;
             padding: 20px;
-            background: rgba(247,37,133,0.03);
+            background: rgba(239,68,68,0.03);
         }
 
         .danger-zone h4 { color: var(--danger); margin-bottom: 5px; font-size: 14px; }
@@ -488,8 +431,8 @@ $r_logs = mysqli_query($connection, $q_logs);
 
         /* responsive */
         @media(max-width: 768px){
-            .dashboard-layout { grid-template-columns: 1fr; }
-            .sidebar { display: none; }
+            .admin-navbar { padding: 0 16px; height: auto; flex-wrap: wrap; padding-top: 12px; padding-bottom: 12px; }
+            .nav-links { gap: 4px; }
             .main-content { padding: 20px; }
         }
     </style>
@@ -497,36 +440,24 @@ $r_logs = mysqli_query($connection, $q_logs);
 <body>
 <div class="dashboard-layout">
 
-    <!-- ===== SIDEBAR ===== -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <h2>Vaccine<span>Admin</span></h2>
-            <p>Child Vaccination System</p>
+    <!-- ===== TOP NAVBAR ===== -->
+    <nav class="admin-navbar">
+        <div class="logo">
+            <div class="logo-icon">🛡️</div>
+            <h2>Admin Panel</h2>
         </div>
-
-        <div class="admin-profile">
-            <div class="admin-avatar"><i class="fas fa-user-shield"></i></div>
-            <div class="admin-info">
-                <h4><?php echo htmlspecialchars($admin_name); ?></h4>
-                <p>Administrator</p>
-            </div>
+        <div class="nav-links">
+            <a href="dashboard.php"> Dashboard</a>
+            <a href="manage_children.php"> Children</a>
+            <a href="manage_hospitals.php"> Hospitals</a>
+            <a href="appointment_requests.php"> Requests</a>
+            <a href="managevaccines.php"> Vaccines</a>
+            <a href="bookingdetail.php"> Bookings</a>
+            <a href="vaccination_reports.php"> Reports</a>
+            <a href="system_settings.php" class="active"> Settings</a>
+            <a href="../logout.php" class="logout"> Logout</a>
         </div>
-
-        <nav class="nav-menu">
-            <a href="dashboard.php"           class="nav-item"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
-            <a href="manage_children.php"     class="nav-item"><i class="fas fa-baby"></i><span>Children</span></a>
-            <a href="manage_hospitals.php"    class="nav-item"><i class="fas fa-hospital"></i><span>Hospitals</span></a>
-            <a href="appointment_requests.php" class="nav-item"><i class="fas fa-calendar-check"></i><span>Requests</span></a>
-            <a href="managevaccines.php"       class="nav-item"><i class="fas fa-syringe"></i><span>Vaccines</span></a>
-            <a href="bookingdetail.php"        class="nav-item"><i class="fas fa-calendar-alt"></i><span>Bookings</span></a>
-            <a href="vaccination_reports.php"  class="nav-item"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
-            <a href="system_settings.php"     class="nav-item active"><i class="fas fa-cog"></i><span>Settings</span></a>
-        </nav>
-
-        <button class="logout-btn" onclick="window.location.href='../logout.php'">
-            <i class="fas fa-sign-out-alt"></i><span>Logout</span>
-        </button>
-    </aside>
+    </nav>
 
     <!-- ===== MAIN CONTENT ===== -->
     <main class="main-content">

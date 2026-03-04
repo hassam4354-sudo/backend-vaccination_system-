@@ -84,70 +84,153 @@ if (!$result) {
     <title>Vaccination Bookings - Admin</title>
     
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        :root {
+            /* White & Blue Color Palette */
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #60a5fa;
+            --primary-soft: #dbeafe;
+            --white: #ffffff;
+            --white-off: #f8fafc;
+            --gray-50: #f1f5f9;
+            --gray-100: #e2e8f0;
+            --gray-200: #cbd5e1;
+            --gray-300: #94a3b8;
+            --gray-400: #64748b;
+            --gray-500: #475569;
+            --gray-600: #334155;
+            --gray-700: #1e293b;
+            --blue-light: #eff6ff;
+            --blue-soft: #bfdbfe;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --shadow-blue: 0 10px 25px -5px rgba(37, 99, 235, 0.2);
+            
+            /* Border Radius */
+            --radius-sm: 6px;
+            --radius: 10px;
+            --radius-md: 14px;
+            --radius-lg: 18px;
+            --radius-xl: 22px;
+            
+            /* Transitions */
+            --transition: all 0.2s ease;
         }
         
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
             min-height: 100vh;
+            color: var(--gray-700);
             padding: 30px;
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
         }
         
-        /* Header */
+        /* ===== PAGE HEADER ===== */
         .page-header {
             background: white;
-            border-radius: 16px;
+            border-radius: 18px;
             padding: 25px 30px;
             margin-bottom: 30px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow);
+            border-left: 6px solid var(--primary);
+            border-top: 1px solid var(--gray-200);
+            border-right: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--gray-200);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            animation: fadeIn 0.5s ease;
         }
         
         .page-header h1 {
-            font-size: 1.8rem;
+            font-size: 26px;
             font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--gray-700);
+            display: flex;
+            align-items: center;
+            gap: 12px;
             margin: 0;
         }
         
-        .page-header p {
-            color: #6b7280;
-            margin-top: 5px;
-            font-size: 0.9rem;
+        .page-header h1 i {
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 12px;
+            border-radius: 14px;
+            font-size: 22px;
+            box-shadow: 0 8px 15px rgba(37, 99, 235, 0.2);
         }
         
-        /* Filter Section */
+        .page-header p {
+            color: var(--gray-500);
+            font-size: 14px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .page-header p i {
+            color: var(--primary);
+        }
+        
+        .booking-count {
+            background: var(--primary-soft);
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .booking-count i {
+            margin-right: 8px;
+        }
+        
+        /* ===== FILTER SECTION ===== */
         .filter-section {
             background: white;
-            border-radius: 16px;
-            padding: 20px;
+            border-radius: 18px;
+            padding: 25px;
             margin-bottom: 30px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-200);
+            animation: fadeIn 0.5s ease 0.1s both;
         }
         
         .filter-form {
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
+            align-items: center;
         }
         
         .search-box {
@@ -158,113 +241,104 @@ if (!$result) {
         
         .search-box i {
             position: absolute;
-            left: 15px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
-            color: #9ca3af;
+            color: var(--primary);
+            font-size: 16px;
         }
         
         .search-box input {
             width: 100%;
-            padding: 12px 12px 12px 45px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            transition: all 0.3s;
+            padding: 14px 18px 14px 50px;
+            border: 2px solid var(--gray-200);
+            border-radius: 40px;
+            font-size: 14px;
+            transition: var(--transition);
+            background: white;
+            color: var(--gray-600);
         }
         
         .search-box input:focus {
-            border-color: #667eea;
+            border-color: var(--primary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
         
         .filter-select {
-            padding: 12px 20px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 0.95rem;
+            padding: 14px 24px;
+            border: 2px solid var(--gray-200);
+            border-radius: 40px;
+            font-size: 14px;
             min-width: 180px;
             cursor: pointer;
+            background: white;
+            color: var(--gray-600);
+            font-weight: 500;
+            transition: var(--transition);
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 20px center;
+            background-size: 16px;
         }
         
         .filter-select:focus {
-            border-color: #667eea;
+            border-color: var(--primary);
             outline: none;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
         
         .btn-filter {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             border: none;
-            border-radius: 10px;
-            padding: 12px 30px;
+            border-radius: 40px;
+            padding: 14px 30px;
             font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid transparent;
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
         }
         
         .btn-filter:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(37, 99, 235, 0.35);
         }
         
         .btn-reset {
-            background: #f3f4f6;
-            color: #4b5563;
-            border: none;
-            border-radius: 10px;
-            padding: 12px 30px;
+            background: var(--gray-50);
+            color: var(--gray-600);
+            border: 1px solid var(--gray-200);
+            border-radius: 40px;
+            padding: 14px 30px;
             font-weight: 600;
+            font-size: 14px;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
+            gap: 10px;
+            transition: var(--transition);
         }
         
         .btn-reset:hover {
-            background: #e5e7eb;
+            background: var(--gray-200);
+            transform: translateY(-3px);
         }
         
-        /* Status Badges */
-        .status-badge {
-            padding: 6px 16px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            text-transform: uppercase;
-        }
-        
-        .status-pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        
-        .status-approved {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        
-        .status-vaccinated {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        
-        .status-cancelled {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-        
-        /* Table Card */
+        /* ===== TABLE CARD ===== */
         .table-card {
             background: white;
-            border-radius: 16px;
+            border-radius: 18px;
             padding: 25px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-200);
+            animation: fadeIn 0.5s ease 0.2s both;
         }
         
         .table-header {
@@ -273,77 +347,76 @@ if (!$result) {
             align-items: center;
             margin-bottom: 25px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #f3f4f6;
+            border-bottom: 2px solid var(--gray-200);
         }
         
         .table-header h3 {
-            font-size: 1.3rem;
+            font-size: 18px;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--gray-700);
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
         .table-header h3 i {
-            color: #667eea;
+            color: var(--primary);
         }
         
-        .booking-count {
-            background: #f3f4f6;
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #4b5563;
-        }
-        
-        /* Table */
+        /* ===== TABLE ===== */
         .table-responsive {
             overflow-x: auto;
+            border-radius: 14px;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 1200px;
         }
         
         thead th {
-            background: #f9fafb;
-            padding: 16px 12px;
-            font-size: 0.8rem;
-            font-weight: 700;
+            background: linear-gradient(135deg, #f0f9ff, #e6f3ff);
+            padding: 16px 15px;
+            font-size: 13px;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: #4b5563;
-            border-bottom: 2px solid #e5e7eb;
+            color: var(--gray-700);
+            border-bottom: 3px solid var(--gray-300);
             text-align: left;
         }
         
         tbody td {
-            padding: 20px 12px;
-            border-bottom: 1px solid #f3f4f6;
-            color: #1f2937;
-            font-size: 0.95rem;
+            padding: 18px 15px;
+            border-bottom: 1px solid var(--gray-200);
+            color: var(--gray-600);
+            font-size: 14px;
+            vertical-align: middle;
+        }
+        
+        tbody tr {
+            transition: var(--transition);
         }
         
         tbody tr:hover {
-            background: #f9fafb;
+            background: var(--gray-50);
         }
         
         .booking-id {
             font-weight: 700;
-            color: #667eea;
+            color: var(--primary);
         }
         
         .confirmation-code {
             font-family: monospace;
-            background: #f3f4f6;
+            background: var(--gray-100);
             padding: 4px 8px;
             border-radius: 6px;
-            font-size: 0.75rem;
+            font-size: 11px;
             display: inline-block;
             margin-top: 5px;
+            color: var(--gray-600);
         }
         
         .child-info {
@@ -355,48 +428,92 @@ if (!$result) {
         .child-avatar {
             width: 40px;
             height: 40px;
-            background: #f3e8ff;
-            border-radius: 50%;
+            background: var(--primary-soft);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #6b46c1;
+            color: var(--primary);
         }
         
         .parent-info {
-            font-size: 0.8rem;
-            color: #6b7280;
-            margin-top: 3px;
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+        
+        .parent-info i {
+            color: var(--primary);
+            width: 14px;
         }
         
         .vaccination-date {
             color: #10b981;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 13px;
         }
         
-        /* Delete Button */
-        .btn-delete {
-            background: #fee2e2;
+        /* ===== STATUS BADGES ===== */
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid transparent;
+        }
+        
+        .status-pending {
+            background: var(--warning-light);
+            color: #d97706;
+            border-color: #fde68a;
+        }
+        
+        .status-approved {
+            background: var(--primary-soft);
+            color: var(--primary-dark);
+            border-color: var(--blue-soft);
+        }
+        
+        .status-vaccinated {
+            background: var(--success-light);
+            color: #059669;
+            border-color: #a7f3d0;
+        }
+        
+        .status-cancelled {
+            background: var(--danger-light);
             color: #dc2626;
-            border: none;
+            border-color: #fecaca;
+        }
+        
+        /* ===== DELETE BUTTON ===== */
+        .btn-delete {
+            background: var(--danger-light);
+            color: #dc2626;
+            border: 1px solid #fecaca;
             border-radius: 8px;
             padding: 8px 16px;
-            font-size: 0.8rem;
+            font-size: 12px;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
         }
         
         .btn-delete:hover {
             background: #dc2626;
             color: white;
+            border-color: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 38, 38, 0.3);
         }
         
-        /* Modal */
+        /* ===== MODAL ===== */
         .modal {
             display: none;
             position: fixed;
@@ -408,6 +525,7 @@ if (!$result) {
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            backdrop-filter: blur(5px);
         }
         
         .modal.active {
@@ -416,36 +534,37 @@ if (!$result) {
         
         .modal-content {
             background: white;
-            border-radius: 16px;
+            border-radius: 25px;
             width: 90%;
             max-width: 450px;
-            animation: slideIn 0.3s ease;
+            box-shadow: 0 25px 50px rgba(220, 38, 38, 0.2);
+            animation: slideIn 0.4s ease;
+            overflow: hidden;
         }
         
         @keyframes slideIn {
             from {
-                transform: translateY(-30px);
                 opacity: 0;
+                transform: translateY(-50px);
             }
             to {
-                transform: translateY(0);
                 opacity: 1;
+                transform: translateY(0);
             }
         }
         
         .modal-header {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            background: linear-gradient(145deg, #dc2626, #b91c1c);
             color: white;
             padding: 20px 25px;
-            border-radius: 16px 16px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
         .modal-header h5 {
-            font-size: 1.2rem;
-            font-weight: 700;
+            font-size: 18px;
+            font-weight: 600;
             margin: 0;
             display: flex;
             align-items: center;
@@ -453,11 +572,23 @@ if (!$result) {
         }
         
         .modal-close {
-            background: none;
+            background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            font-size: 1.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 20px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        
+        .modal-close:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
         }
         
         .modal-body {
@@ -467,80 +598,151 @@ if (!$result) {
         
         .modal-footer {
             padding: 20px 25px;
-            border-top: 1px solid #e5e7eb;
+            border-top: 2px solid var(--gray-200);
             display: flex;
             justify-content: flex-end;
             gap: 12px;
+            background: #f9fdff;
         }
         
         .btn {
             padding: 10px 24px;
-            border-radius: 8px;
+            border-radius: 40px;
             font-weight: 600;
+            font-size: 14px;
             border: none;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .btn-secondary {
-            background: #f3f4f6;
-            color: #4b5563;
+            background: var(--gray-100);
+            color: var(--gray-600);
+            border: 1px solid var(--gray-200);
         }
         
         .btn-secondary:hover {
-            background: #e5e7eb;
+            background: var(--gray-200);
+            transform: translateY(-2px);
         }
         
         .btn-danger {
-            background: #dc2626;
+            background: linear-gradient(145deg, #dc2626, #b91c1c);
             color: white;
+            border: 1px solid transparent;
+            box-shadow: 0 8px 18px rgba(220, 38, 38, 0.25);
         }
         
         .btn-danger:hover {
-            background: #b91c1c;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(220,38,38,0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(220, 38, 38, 0.35);
         }
         
+        /* ===== ALERTS ===== */
         .alert {
-            background: #d1fae5;
-            color: #065f46;
-            padding: 15px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            background: white;
+            border-radius: 16px;
+            padding: 16px 22px;
+            margin-bottom: 25px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            animation: slideDown 0.4s ease;
+            border-left-width: 6px;
+            border-left-style: solid;
+            border-top: 1px solid;
+            border-right: 1px solid;
+            border-bottom: 1px solid;
+        }
+        
+        .alert:not(.alert-danger) {
+            background: linear-gradient(145deg, #e8f8f5, #d1f2eb);
+            color: #1e6f5c;
+            border-left-color: #10b981;
+            border-color: #a7f3d0;
         }
         
         .alert-danger {
-            background: #fee2e2;
-            color: #991b1b;
+            background: linear-gradient(145deg, #fdeded, #f9e2e2);
+            color: #c0392b;
+            border-left-color: #ef4444;
+            border-color: #fecaca;
         }
         
-        /* Empty State */
+        .btn-close {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: auto;
+            padding: 0 8px;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* ===== EMPTY STATE ===== */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
         }
         
         .empty-state i {
-            font-size: 5rem;
-            color: #e5e7eb;
+            font-size: 60px;
+            color: var(--gray-300);
             margin-bottom: 20px;
         }
         
         .empty-state h4 {
-            font-size: 1.5rem;
-            color: #1f2937;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gray-700);
             margin-bottom: 10px;
         }
         
         .empty-state p {
-            color: #6b7280;
+            color: var(--gray-500);
         }
         
-        /* Responsive */
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* ===== CUSTOM SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--gray-100);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--gray-300), var(--gray-400));
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+        
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             body {
                 padding: 15px;
@@ -554,27 +756,97 @@ if (!$result) {
                 min-width: 100%;
             }
             
-            .table-responsive {
-                margin: 0 -15px;
+            .filter-select {
+                width: 100%;
             }
             
-            table {
-                min-width: 900px;
+            .btn-filter, .btn-reset {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .modal-footer {
+                flex-direction: column;
+            }
+            
+            .modal-footer .btn {
+                width: 100%;
+                justify-content: center;
             }
         }
+          /* ── NAVBAR ── */
+        .admin-navbar {
+            background:#ffffff; border-bottom:2px solid #e8eeff;
+            padding:0 35px; display:flex; justify-content:space-between;
+            align-items:center; height:68px;
+            box-shadow:0 2px 16px rgba(59,130,246,0.08);
+            position:sticky; top:0; z-index:100;
+        }
+        .admin-navbar .logo { display:flex; align-items:center; gap:10px; }
+        .admin-navbar .logo-icon {
+            width:40px; height:40px;
+            background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+            border-radius:10px; display:flex; align-items:center;
+            justify-content:center; font-size:20px;
+        }
+        .admin-navbar .logo h2 { font-size:20px; font-weight:700; color:#1d4ed8; letter-spacing:-0.3px; }
+        .nav-links { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+        .nav-links a {
+            color:#4b6cb7; text-decoration:none; padding:8px 14px;
+            border-radius:8px; font-size:13.5px; font-weight:500;
+            transition:all 0.2s; display:flex; align-items:center; gap:6px;
+        }
+        .nav-links a:hover { background:#eff6ff; color:#1d4ed8; }
+        .nav-links a.active { background:#dbeafe; color:#1d4ed8; font-weight:600; }
+        .nav-links a.logout { background:#fee2e2; color:#dc2626; }
+        .nav-links a.logout:hover { background:#fecaca; }
     </style>
 </head>
 <body>
+      <!-- Admin Navbar -->
+    <nav class="admin-navbar">
+        <div class="logo">
+            <div class="logo-icon">🛡️</div>
+            <h2>Admin Panel</h2>
+        </div>
+        <div class="nav-links">
+            <a href="dashboard.php">Dashboard</a>
+            <a href="manage_children.php"> Children</a>
+            <a href="manage_hospitals.php"> Hospitals</a>
+            <a href="appointment_requests.php"> Requests</a>
+            <a href="managevaccines.php"> Vaccines</a>
+            <a href="bookingdetail.php"> Bookings</a>
+            <a href="vaccination_reports.php" class="active"> Reports</a>
+            <a href="system_settings.php"> Settings</a>
+            <a href="../logout.php" class="logout">Logout</a>
+        </div>
+    </nav>
+<br><br>
     <div class="container">
-        <!-- Simple Header - Sirf Bookings -->
+        <!-- Page Header -->
         <div class="page-header">
             <div>
-                <h1><i class="fas fa-calendar-check me-2"></i> Vaccination Bookings</h1>
-                <p><i class="fas fa-calendar-alt me-1" style="color: #667eea;"></i> <?php echo date('l, F j, Y'); ?></p>
+                <h1>
+                    <i class="fas fa-calendar-check"></i>
+                    Vaccination Bookings
+                </h1>
+                <p><i class="fas fa-calendar-alt"></i> <?php echo date('l, F j, Y'); ?></p>
             </div>
             <div>
                 <span class="booking-count">
-                    <i class="fas fa-list-ul me-1"></i> Total: <?php echo mysqli_num_rows($result); ?>
+                    <i class="fas fa-list-ul"></i> Total: <?php echo mysqli_num_rows($result); ?>
                 </span>
             </div>
         </div>
@@ -582,17 +854,17 @@ if (!$result) {
         <!-- Flash Messages -->
         <?php if (isset($_SESSION['flash_message'])): ?>
         <div class="alert <?php echo $_SESSION['flash_type'] == 'success' ? '' : 'alert-danger'; ?>">
-            <i class="fas <?php echo $_SESSION['flash_type'] == 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'; ?> me-2"></i>
+            <i class="fas <?php echo $_SESSION['flash_type'] == 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'; ?>"></i>
             <?php 
                 echo $_SESSION['flash_message'];
                 unset($_SESSION['flash_message']);
                 unset($_SESSION['flash_type']);
             ?>
-            <button type="button" class="btn-close ms-auto" onclick="this.parentElement.remove()" style="background: none; border: none; color: inherit; font-size: 1.2rem;">&times;</button>
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()">&times;</button>
         </div>
         <?php endif; ?>
         
-        <!-- Filter Section - Sirf Search aur Status Filter -->
+        <!-- Filter Section -->
         <div class="filter-section">
             <form method="GET" action="" class="filter-form">
                 <div class="search-box">
@@ -607,15 +879,15 @@ if (!$result) {
                     <option value="cancelled" <?php echo $status_filter == 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
                 </select>
                 <button type="submit" class="btn-filter">
-                    <i class="fas fa-filter me-2"></i> Apply
+                    <i class="fas fa-filter"></i> Apply
                 </button>
                 <a href="bookingdetail.php" class="btn-reset">
-                    <i class="fas fa-redo me-2"></i> Reset
+                    <i class="fas fa-redo"></i> Reset
                 </a>
             </form>
         </div>
         
-        <!-- Bookings Table - Sirf Bookings List -->
+        <!-- Bookings Table -->
         <div class="table-card">
             <div class="table-header">
                 <h3>
@@ -659,40 +931,40 @@ if (!$result) {
                                             <i class="fas fa-child"></i>
                                         </div>
                                         <div>
-                                            <div style="font-weight: 700;"><?php echo htmlspecialchars($row['child_name']); ?></div>
+                                            <div style="font-weight: 600; color: var(--gray-700);"><?php echo htmlspecialchars($row['child_name']); ?></div>
                                             <div class="parent-info">
-                                                <i class="fas fa-user me-1"></i> <?php echo htmlspecialchars($row['parent_name']); ?>
+                                                <i class="fas fa-user"></i> <?php echo htmlspecialchars($row['parent_name']); ?>
                                                 <?php if ($row['parent_phone']): ?>
-                                                <br><i class="fas fa-phone me-1"></i> <?php echo htmlspecialchars($row['parent_phone']); ?>
+                                                <br><i class="fas fa-phone"></i> <?php echo htmlspecialchars($row['parent_phone']); ?>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <div style="font-weight: 600;"><?php echo htmlspecialchars($row['vaccine_name']); ?></div>
+                                    <div style="font-weight: 600; color: var(--gray-700);"><?php echo htmlspecialchars($row['vaccine_name']); ?></div>
                                 </td>
                                 <td>
-                                    <div style="font-weight: 500;"><?php echo htmlspecialchars($row['hospital_name']); ?></div>
+                                    <div style="font-weight: 500; color: var(--gray-700);"><?php echo htmlspecialchars($row['hospital_name']); ?></div>
                                     <div class="parent-info">
-                                        <i class="fas fa-map-marker-alt me-1"></i> <?php echo htmlspecialchars($row['hospital_city']); ?>
+                                        <i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($row['hospital_city']); ?>
                                     </div>
                                 </td>
                                 <td>
-                                    <div style="font-weight: 600;"><?php echo date('d M Y', strtotime($row['booking_date'])); ?></div>
+                                    <div style="font-weight: 600; color: var(--gray-700);"><?php echo date('d M Y', strtotime($row['booking_date'])); ?></div>
                                     <div class="parent-info">
-                                        <i class="fas fa-clock me-1"></i> <?php echo date('h:i A', strtotime($row['appointment_time'])); ?>
+                                        <i class="fas fa-clock"></i> <?php echo date('h:i A', strtotime($row['appointment_time'])); ?>
                                     </div>
                                 </td>
                                 <td>
                                     <?php if ($row['display_status'] == 'Vaccinated'): ?>
                                         <span class="vaccination-date">
-                                            <i class="fas fa-check-circle me-1"></i> 
+                                            <i class="fas fa-check-circle"></i> 
                                             <?php echo date('d M Y', strtotime($row['vaccination_date'])); ?>
                                         </span>
                                     <?php else: ?>
                                         <span class="parent-info">
-                                            <i class="fas fa-minus-circle me-1"></i> Not vaccinated
+                                            <i class="fas fa-minus-circle"></i> Not vaccinated
                                         </span>
                                     <?php endif; ?>
                                 </td>
@@ -727,7 +999,6 @@ if (!$result) {
                                     </span>
                                 </td>
                                 <td>
-                                    <!-- Sirf Delete Button -->
                                     <button type="button" class="btn-delete" onclick="showDeleteModal(<?php echo $row['booking_id']; ?>, '<?php echo htmlspecialchars(addslashes($row['child_name'])); ?>')">
                                         <i class="fas fa-trash"></i> Delete
                                     </button>
@@ -741,7 +1012,7 @@ if (!$result) {
                                     <h4>No Bookings Found</h4>
                                     <p>No vaccination bookings found in the system.</p>
                                     <a href="bookingdetail.php" class="btn-filter" style="display: inline-block; margin-top: 15px; text-decoration: none;">
-                                        <i class="fas fa-redo me-2"></i> Reset Filters
+                                        <i class="fas fa-redo"></i> Reset Filters
                                     </a>
                                 </td>
                             </tr>
@@ -752,12 +1023,12 @@ if (!$result) {
         </div>
     </div>
     
-    <!-- Delete Modal - Sirf Delete Confirmation -->
+    <!-- Delete Modal -->
     <div class="modal" id="deleteModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h5>
-                    <i class="fas fa-trash me-2"></i> Delete Booking
+                    <i class="fas fa-trash"></i> Delete Booking
                 </h5>
                 <button type="button" class="modal-close" onclick="closeDeleteModal()">&times;</button>
             </div>
@@ -769,18 +1040,18 @@ if (!$result) {
                         <i class="fas fa-exclamation-triangle" style="font-size: 40px; color: #dc2626;"></i>
                     </div>
                     
-                    <h5 style="font-weight: 700; margin-bottom: 15px;">Confirm Deletion</h5>
-                    <p style="color: #6b7280; margin-bottom: 10px;">
-                        Are you sure you want to delete the booking for <strong id="delete_child_name"></strong>?
+                    <h5 style="font-weight: 700; margin-bottom: 15px; color: var(--gray-700);">Confirm Deletion</h5>
+                    <p style="color: var(--gray-500); margin-bottom: 10px;">
+                        Are you sure you want to delete the booking for <strong id="delete_child_name" style="color: var(--primary);"></strong>?
                     </p>
-                    <p style="color: #dc2626; font-size: 0.9rem;">
-                        <i class="fas fa-exclamation-circle me-1"></i> This action cannot be undone.
+                    <p style="color: #dc2626; font-size: 13px;">
+                        <i class="fas fa-exclamation-circle"></i> This action cannot be undone.
                     </p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
                     <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash me-2"></i> Delete Booking
+                        <i class="fas fa-trash"></i> Delete Booking
                     </button>
                 </div>
             </form>
@@ -809,7 +1080,7 @@ if (!$result) {
         }
         
         // Auto-submit filter on status change
-        document.querySelector('.filter-select').addEventListener('change', function() {
+        document.querySelector('.filter-select')?.addEventListener('change', function() {
             this.form.submit();
         });
         
@@ -820,7 +1091,9 @@ if (!$result) {
                 alert.style.transition = 'opacity 0.5s';
                 alert.style.opacity = '0';
                 setTimeout(function() {
-                    alert.remove();
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
                 }, 500);
             });
         }, 5000);

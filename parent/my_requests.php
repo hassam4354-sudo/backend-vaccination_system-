@@ -62,1160 +62,790 @@ $stats = mysqli_fetch_assoc($stats_result);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Appointment Requests - Parent Dashboard</title>
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Animate.css -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 30px 20px;
+            font-family: 'Inter', Arial, sans-serif;
+            background: #f0f4ff;
+            color: #1a1a2e;
         }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        /* ===== NAVBAR - ULTRA MODERN ===== */
+
+        /* ── NAVBAR ── */
         .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-radius: 30px;
-            padding: 18px 35px;
-            margin-bottom: 35px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.5);
+            background: #ffffff;
+            border-bottom: 2px solid #e8eeff;
+            padding: 0 35px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            height: 68px;
+            box-shadow: 0 2px 16px rgba(59,130,246,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .navbar h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1d4ed8;
+            letter-spacing: -0.3px;
+        }
+        .nav-links { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .nav-links a {
+            color: #4b6cb7;
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover {
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+        .nav-links a.active-link {
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+        .nav-links a.logout {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .nav-links a.logout:hover { background: #fecaca; }
+
+        /* ── LAYOUT ── */
+        .container { max-width: 1200px; margin: 32px auto; padding: 0 24px; }
+
+        /* ── PAGE HEADER ── */
+        .page-header {
+            background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 60%, #60a5fa 100%);
+            border-radius: 18px;
+            padding: 32px 36px;
+            margin-bottom: 28px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(59,130,246,0.3);
             position: relative;
             overflow: hidden;
-            animation: slideInDown 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
-        
-        .navbar::before {
+        .page-header::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            animation: shimmer 3s infinite;
+            top: -40px; right: -40px;
+            width: 200px; height: 200px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
         }
-        
-        @keyframes shimmer {
-            100% { left: 100%; }
-        }
-        
-        .navbar h2 {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 28px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .navbar h2 i {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 32px;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        
-        .nav-links a {
-            text-decoration: none;
-            color: #4a5568;
-            padding: 12px 25px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(102,126,234,0.1);
-            border: 1px solid rgba(102,126,234,0.2);
-        }
-        
-        .nav-links a i {
-            color: #667eea;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        
-        .nav-links a:hover {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 15px 30px rgba(102,126,234,0.4);
-            border: 1px solid transparent;
-        }
-        
-        .nav-links a:hover i {
-            color: white;
-        }
-        
-        .nav-links a.logout {
-            background: linear-gradient(135deg, #f43f5e, #e11d48);
-            color: white;
-            border: none;
-        }
-        
-        .nav-links a.logout i {
-            color: white;
-        }
-        
-        /* ===== PAGE HEADER ===== */
-        .page-header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 40px;
-            padding: 40px 50px;
-            margin-bottom: 40px;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.5);
-            position: relative;
-            overflow: hidden;
-            animation: fadeIn 1s ease;
-        }
-        
         .page-header::after {
             content: '';
             position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(102,126,234,0.15) 0%, transparent 60%);
-            animation: rotate 20s linear infinite;
+            bottom: -60px; right: 80px;
+            width: 160px; height: 160px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
         }
-        
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
         .page-header h1 {
-            color: #1e293b;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            font-size: 42px;
-            font-weight: 800;
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 6px;
             position: relative;
-            z-index: 2;
+            z-index: 1;
         }
-        
-        .page-header h1 i {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 48px;
-            padding: 15px;
-            border-radius: 20px;
-            background: rgba(255,255,255,0.5);
-            backdrop-filter: blur(10px);
-        }
-        
         .page-header p {
-            color: #64748b;
-            font-size: 18px;
-            max-width: 600px;
-            line-height: 1.8;
+            font-size: 14px;
+            opacity: 0.85;
             position: relative;
-            z-index: 2;
+            z-index: 1;
         }
-        
-        /* ===== STATS CARDS ===== */
+
+        /* ── STATS GRID ── */
         .stats-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 28px;
         }
-        
         .stat-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 30px;
-            padding: 30px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.5);
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            border: 1px solid rgba(255,255,255,0.3);
-            position: relative;
-            overflow: hidden;
-            animation: fadeInUp 0.8s ease;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 26px 28px;
+            box-shadow: 0 2px 12px rgba(59,130,246,0.07);
+            border: 1px solid #e8eeff;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-        }
-        
         .stat-card:hover {
-            transform: translateY(-15px) scale(1.02);
-            box-shadow: 0 30px 70px rgba(102,126,234,0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(59,130,246,0.13);
         }
-        
         .stat-icon {
-            width: 70px;
-            height: 70px;
-            border-radius: 20px;
+            width: 58px;
+            height: 58px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 25px;
+            font-size: 24px;
+            flex-shrink: 0;
+            background: #eff6ff;
+        }
+        .stat-icon.green { background: #f0fdf4; }
+        .stat-icon.amber { background: #fffbeb; }
+        .stat-icon.red   { background: #fff1f2; }
+        .stat-info h3 {
             font-size: 32px;
-            color: white;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            box-shadow: 0 15px 30px rgba(102,126,234,0.3);
+            font-weight: 700;
+            color: #1d4ed8;
+            line-height: 1;
+            margin-bottom: 5px;
         }
-        
-        .stat-card h3 {
-            font-size: 42px;
-            font-weight: 800;
-            color: #1e293b;
-            margin-bottom: 8px;
-        }
-        
-        .stat-card p {
-            color: #64748b;
+        .stat-info p {
+            font-size: 13px;
+            color: #6b7280;
             font-weight: 500;
-            font-size: 16px;
         }
-        
-        /* ===== FILTER TABS ===== */
+
+        /* ── FILTER TABS ── */
         .filter-tabs {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 50px;
-            padding: 10px;
-            margin-bottom: 40px;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 24px;
             display: inline-flex;
-            gap: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            animation: fadeIn 0.8s ease;
+            gap: 6px;
+            box-shadow: 0 2px 12px rgba(59,130,246,0.07);
+            border: 1px solid #e8eeff;
         }
-        
         .tab-btn {
-            padding: 14px 35px;
+            padding: 10px 24px;
             border: none;
             background: transparent;
-            border-radius: 40px;
+            border-radius: 8px;
             font-weight: 600;
-            font-size: 15px;
-            color: #64748b;
+            font-size: 13.5px;
+            color: #6b7280;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            transition: all 0.2s;
+            font-family: 'Inter', Arial, sans-serif;
         }
-        
-        .tab-btn i {
-            font-size: 16px;
-        }
-        
-        .tab-btn:hover {
-            color: #667eea;
-            background: rgba(102,126,234,0.1);
-        }
-        
+        .tab-btn:hover { color: #1d4ed8; background: #eff6ff; }
         .tab-btn.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             color: white;
-            box-shadow: 0 10px 25px rgba(102,126,234,0.4);
+            box-shadow: 0 4px 12px rgba(29,78,216,0.2);
         }
-        
-        /* ===== REQUESTS GRID ===== */
+
+        /* ── REQUESTS GRID ── */
         .requests-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
         }
-        
+
         .request-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 30px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.5);
-            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            border: 1px solid rgba(255,255,255,0.3);
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 2px 12px rgba(59,130,246,0.07);
+            border: 1px solid #e8eeff;
+            transition: transform 0.2s, box-shadow 0.2s;
             position: relative;
             overflow: hidden;
-            animation: fadeInUp 0.8s ease;
         }
-        
         .request-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 30px 60px rgba(102,126,234,0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(59,130,246,0.13);
         }
-        
         .request-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 6px;
+            top: 0; left: 0;
+            width: 100%; height: 5px;
         }
-        
-        .request-card.pending::before {
-            background: linear-gradient(90deg, #f59e0b, #fbbf24);
-        }
-        
-        .request-card.approved::before {
-            background: linear-gradient(90deg, #10b981, #34d399);
-        }
-        
-        .request-card.rejected::before {
-            background: linear-gradient(90deg, #ef4444, #f87171);
-        }
-        
+        .request-card.pending::before  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .request-card.approved::before { background: linear-gradient(90deg, #22c55e, #4ade80); }
+        .request-card.rejected::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+        /* ── CARD HEADER ── */
         .request-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
-        
         .child-avatar {
-            width: 70px;
-            height: 70px;
-            border-radius: 20px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            width: 58px;
+            height: 58px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 32px;
-            box-shadow: 0 15px 30px rgba(102,126,234,0.3);
+            font-size: 26px;
         }
-        
         .request-id {
-            background: rgba(102,126,234,0.1);
-            padding: 8px 18px;
-            border-radius: 40px;
-            font-weight: 700;
-            font-size: 14px;
-            color: #667eea;
-            border: 1px solid rgba(102,126,234,0.3);
-        }
-        
-        .child-name {
-            font-size: 24px;
-            font-weight: 800;
-            color: #1e293b;
-            margin-bottom: 10px;
-        }
-        
-        .child-age {
-            color: #64748b;
-            font-weight: 500;
-            font-size: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-        
-        .request-details {
-            background: rgba(241, 245, 249, 0.7);
+            background: #eff6ff;
+            padding: 6px 14px;
             border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 13px;
+            color: #1d4ed8;
+            border: 1px solid #dbeafe;
         }
-        
+
+        .child-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 6px;
+        }
+        .child-age {
+            color: #6b7280;
+            font-weight: 500;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        /* ── DETAIL ROWS ── */
+        .request-details {
+            background: #f8faff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 18px;
+            border: 1px solid #e8eeff;
+        }
         .detail-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5ff;
+            font-size: 13.5px;
         }
-        
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-        
+        .detail-row:last-child { border-bottom: none; }
         .detail-label {
-            color: #64748b;
+            color: #6b7280;
             font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
-        
-        .detail-label i {
-            color: #667eea;
-            width: 20px;
-        }
-        
         .detail-value {
-            font-weight: 700;
-            color: #1e293b;
+            font-weight: 600;
+            color: #1a1a2e;
+            text-align: right;
         }
-        
+
+        /* ── BADGES ── */
         .status-badge {
-            padding: 10px 25px;
-            border-radius: 50px;
+            padding: 6px 16px;
+            border-radius: 20px;
             font-weight: 700;
-            font-size: 14px;
+            font-size: 12px;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            letter-spacing: 0.5px;
+            gap: 6px;
             text-transform: uppercase;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            width: fit-content;
+            letter-spacing: 0.4px;
+            margin-bottom: 14px;
         }
-        
-        .status-badge.pending {
-            background: linear-gradient(135deg, #fef3c7, #fde68a);
-            color: #b45309;
+        .status-badge.pending  { background: #fef9c3; color: #854d0e; }
+        .status-badge.approved { background: #dcfce7; color: #166534; }
+        .status-badge.rejected { background: #fee2e2; color: #dc2626; }
+
+        .dose-badge {
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 12px;
         }
-        
-        .status-badge.approved {
-            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-            color: #065f46;
+
+        .vaccine-code {
+            font-family: monospace;
+            background: #f1f5f9;
+            padding: 2px 7px;
+            border-radius: 5px;
+            margin-left: 6px;
+            font-size: 11px;
+            color: #6b7280;
         }
-        
-        .status-badge.rejected {
-            background: linear-gradient(135deg, #fee2e2, #fecaca);
-            color: #b91c1c;
-        }
-        
-        .admin-notes {
-            background: #f8fafc;
-            border-radius: 15px;
-            padding: 15px;
-            margin: 20px 0;
-            border-left: 4px solid #667eea;
-            font-size: 14px;
-            line-height: 1.8;
-        }
-        
+
+        /* ── DAYS REMAINING ── */
         .days-remaining {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 18px;
-            border-radius: 40px;
-            font-weight: 700;
-            font-size: 13px;
-            background: rgba(102,126,234,0.1);
-            color: #667eea;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            margin-bottom: 14px;
         }
-        
-        .urgent {
-            background: linear-gradient(135deg, #fee2e2, #fecaca);
-            color: #b91c1c;
+        .days-remaining.urgent {
+            background: #fee2e2;
+            color: #dc2626;
             animation: pulse 2s infinite;
         }
-        
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.04); }
         }
-        
+
+        /* ── ADMIN NOTES ── */
+        .admin-notes {
+            background: #f8faff;
+            border-left: 4px solid #3b82f6;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin: 14px 0;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #374151;
+        }
+        .admin-notes strong { color: #1d4ed8; }
+        .admin-notes small  { color: #3b82f6; font-size: 12px; }
+
+        /* ── ACTION BUTTONS ── */
         .request-actions {
             display: flex;
-            gap: 12px;
-            margin-top: 20px;
+            gap: 10px;
+            margin-top: 18px;
         }
-        
         .btn {
             flex: 1;
-            padding: 14px;
+            padding: 12px;
             border: none;
-            border-radius: 15px;
-            font-weight: 700;
-            font-size: 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 13.5px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transition: all 0.22s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 7px;
             text-decoration: none;
+            font-family: 'Inter', Arial, sans-serif;
         }
-        
         .btn-view {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             color: white;
-            box-shadow: 0 10px 20px rgba(102,126,234,0.3);
+            box-shadow: 0 4px 12px rgba(29,78,216,0.2);
         }
-        
         .btn-view:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 20px 30px rgba(102,126,234,0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(29,78,216,0.3);
         }
-        
-        .btn-cancel {
-            background: linear-gradient(135deg, #f43f5e, #e11d48);
-            color: white;
-            box-shadow: 0 10px 20px rgba(244,63,94,0.3);
+        .btn-cancel-req {
+            background: #fff1f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
         }
-        
-        .btn-cancel:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 20px 30px rgba(244,63,94,0.5);
+        .btn-cancel-req:hover {
+            background: #fee2e2;
+            transform: translateY(-2px);
         }
-        
         .btn:disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
+            transform: none !important;
         }
-        
-        /* ===== EMPTY STATE ===== */
+
+        /* ── EMPTY STATE ── */
         .empty-state {
             text-align: center;
-            padding: 80px 40px;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 50px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            padding: 60px 40px;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e8eeff;
+            box-shadow: 0 2px 12px rgba(59,130,246,0.07);
+            color: #9ca3af;
         }
-        
-        .empty-state i {
-            font-size: 100px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 25px;
-        }
-        
-        .empty-state h3 {
-            font-size: 32px;
-            color: #1e293b;
-            margin-bottom: 15px;
-            font-weight: 800;
-        }
-        
-        .empty-state p {
-            color: #64748b;
-            font-size: 18px;
-            margin-bottom: 30px;
-        }
-        
+        .empty-state span { font-size: 52px; display: block; margin-bottom: 14px; }
+        .empty-state h3 { font-size: 20px; color: #374151; margin-bottom: 8px; font-weight: 700; }
+        .empty-state p { font-size: 14px; margin-bottom: 24px; }
         .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             color: white;
-            padding: 16px 40px;
-            border-radius: 50px;
+            padding: 12px 28px;
+            border-radius: 10px;
             text-decoration: none;
-            font-weight: 700;
-            font-size: 16px;
+            font-weight: 600;
+            font-size: 14px;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            transition: all 0.3s;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 10px 25px rgba(102,126,234,0.4);
+            gap: 8px;
+            transition: all 0.22s;
+            box-shadow: 0 4px 14px rgba(29,78,216,0.2);
         }
-        
         .btn-primary:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 20px 40px rgba(102,126,234,0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(29,78,216,0.3);
         }
-        
-        /* ===== MODAL ===== */
+
+        /* ── MODAL ── */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15,23,42,0.45);
+            backdrop-filter: blur(6px);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 9999;
-            animation: fadeIn 0.3s ease;
         }
-        
-        .modal-overlay.active {
-            display: flex;
-        }
-        
+        .modal-overlay.active { display: flex; }
         .modal {
             background: white;
-            border-radius: 40px;
-            padding: 40px;
-            max-width: 500px;
+            border-radius: 20px;
+            padding: 36px;
+            max-width: 460px;
             width: 90%;
-            box-shadow: 0 30px 70px rgba(0,0,0,0.3);
-            animation: slideInUp 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+            border: 1px solid #e8eeff;
         }
-        
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
+            margin-bottom: 22px;
         }
-        
         .modal-header h3 {
-            font-size: 28px;
-            font-weight: 800;
-            color: #1e293b;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a2e;
         }
-        
         .modal-close {
             background: none;
             border: none;
-            font-size: 30px;
-            color: #64748b;
+            font-size: 24px;
+            color: #9ca3af;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: color 0.2s;
         }
-        
-        .modal-close:hover {
-            color: #ef4444;
-            transform: rotate(90deg);
-        }
-        
-        .modal-body {
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        
+        .modal-close:hover { color: #dc2626; }
+        .modal-body { text-align: center; margin-bottom: 24px; }
         .modal-icon {
-            width: 80px;
-            height: 80px;
+            width: 72px;
+            height: 72px;
             background: #fee2e2;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
-            color: #ef4444;
-            font-size: 40px;
+            margin: 0 auto 18px;
+            font-size: 34px;
         }
-        
-        .modal-actions {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .btn-secondary {
-            background: #f1f5f9;
-            color: #475569;
+        .modal-body h4 { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px; }
+        .modal-body p { color: #6b7280; font-size: 14px; line-height: 1.7; }
+        .modal-body .warn-text { color: #dc2626; font-size: 13px; margin-top: 8px; }
+        .modal-actions { display: flex; gap: 12px; }
+        .btn-modal-keep {
             flex: 1;
+            padding: 12px;
+            background: #f8faff;
+            color: #4b6cb7;
+            border: 1.5px solid #e8eeff;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', Arial, sans-serif;
         }
-        
-        /* ===== ANIMATIONS ===== */
-        @keyframes slideInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-100px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .btn-modal-keep:hover { background: #eff6ff; }
+        .btn-modal-cancel {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.22s;
+            box-shadow: 0 4px 12px rgba(220,38,38,0.2);
         }
-        
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(100px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .btn-modal-cancel:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(220,38,38,0.3); }
+
+        /* ── RESPONSIVE ── */
+        @media(max-width: 1024px) {
+            .stats-container { grid-template-columns: repeat(2, 1fr); }
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        @media(max-width: 768px) {
+            .requests-grid { grid-template-columns: 1fr; }
+            .stats-container { grid-template-columns: repeat(2, 1fr); }
+            .filter-tabs { flex-wrap: wrap; }
         }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 1200px) {
-            .navbar {
-                flex-direction: column;
-                gap: 20px;
-            }
-            
-            .nav-links {
-                justify-content: center;
-            }
-            
-            .page-header h1 {
-                font-size: 36px;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .requests-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .stats-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .filter-tabs {
-                flex-direction: column;
-                width: 100%;
-                border-radius: 30px;
-            }
-            
-            .page-header h1 {
-                font-size: 28px;
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .request-header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .stats-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .navbar {
-                padding: 15px;
-            }
-            
-            .nav-links {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .nav-links a {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .page-header {
-                padding: 30px 25px;
-            }
-            
-            .modal {
-                padding: 30px 25px;
-            }
+        @media(max-width: 600px) {
+            .navbar { padding: 0 16px; height: auto; padding: 12px 16px; flex-direction: column; gap: 12px; }
+            .stats-container { grid-template-columns: 1fr 1fr; }
+            .container { padding: 0 14px; }
         }
     </style>
 </head>
 <body>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <h2> Parent_Panel</h2>
+        <div class="nav-links">
+            <a href="dashboard.php">Dashboard</a>
+            <a href="my_children.php">My Children</a>
+            <a href="book_appointment.php">Book</a>
+            <a href="my_requests.php" class="active-link">My Requests</a>
+            <a href="vaccination_history.php">History</a>
+            <a href="myprofile.php">Profile</a>
+            <a href="../logout.php" class="logout">Logout</a>
+        </div>
+    </div>
+
     <div class="container">
-        <!-- ===== NAVBAR ===== -->
-        <nav class="navbar animate__animated animate__fadeInDown">
-            <h2>
-                <i class="fas fa-child"></i>
-                Parent Dashboard
-            </h2>
-            <div class="nav-links">
-                <a href="dashboard.php">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </a>
-                <a href="my_children.php">
-                    <i class="fas fa-users"></i> My Children
-                </a>
-                <a href="book_appointment.php">
-                    <i class="fas fa-calendar-plus"></i> Book Appointment
-                </a>
-                <a href="my_requests.php" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
-                    <i class="fas fa-clock"></i> My Requests
-                </a>
-                <a href="vaccination_history.php">
-                    <i class="fas fa-history"></i> History
-                </a>
-                <a href="myprofile.php">
-                    <i class="fas fa-user"></i> Profile
-                </a>
-                <a href="../logout.php" class="logout">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-            </div>
-        </nav>
-        
-        <!-- ===== PAGE HEADER ===== -->
-        <div class="page-header animate__animated animate__fadeIn">
-            <h1>
-                <i class="fas fa-clock"></i>
-                My Appointment Requests
-            </h1>
+
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <h1>📋 My Appointment Requests</h1>
             <p>Track the status of all your vaccination appointment requests</p>
         </div>
-        
-        <!-- ===== STATS CARDS ===== -->
+
+        <!-- STATS -->
         <div class="stats-container">
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-calendar-alt"></i>
+                <div class="stat-icon">📅</div>
+                <div class="stat-info">
+                    <h3><?php echo $stats['total_requests'] ?? 0; ?></h3>
+                    <p>Total Requests</p>
                 </div>
-                <h3><?php echo $stats['total_requests'] ?? 0; ?></h3>
-                <p>Total Requests</p>
             </div>
-            
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-clock"></i>
+                <div class="stat-icon amber">⏳</div>
+                <div class="stat-info">
+                    <h3><?php echo $stats['pending_count'] ?? 0; ?></h3>
+                    <p>Pending</p>
                 </div>
-                <h3><?php echo $stats['pending_count'] ?? 0; ?></h3>
-                <p>Pending</p>
             </div>
-            
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-check-circle"></i>
+                <div class="stat-icon green">✅</div>
+                <div class="stat-info">
+                    <h3><?php echo $stats['approved_count'] ?? 0; ?></h3>
+                    <p>Approved</p>
                 </div>
-                <h3><?php echo $stats['approved_count'] ?? 0; ?></h3>
-                <p>Approved</p>
             </div>
-            
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-times-circle"></i>
+                <div class="stat-icon red">❌</div>
+                <div class="stat-info">
+                    <h3><?php echo $stats['rejected_count'] ?? 0; ?></h3>
+                    <p>Rejected</p>
                 </div>
-                <h3><?php echo $stats['rejected_count'] ?? 0; ?></h3>
-                <p>Rejected</p>
             </div>
         </div>
-        
-        <!-- ===== FILTER TABS ===== -->
+
+        <!-- FILTER TABS -->
         <div class="filter-tabs">
-            <button class="tab-btn active" onclick="filterRequests('all')" id="tabAll">
-                <i class="fas fa-list-ul"></i> All
-            </button>
-            <button class="tab-btn" onclick="filterRequests('pending')" id="tabPending">
-                <i class="fas fa-clock"></i> Pending
-            </button>
-            <button class="tab-btn" onclick="filterRequests('approved')" id="tabApproved">
-                <i class="fas fa-check-circle"></i> Approved
-            </button>
-            <button class="tab-btn" onclick="filterRequests('rejected')" id="tabRejected">
-                <i class="fas fa-times-circle"></i> Rejected
-            </button>
+            <button class="tab-btn active" onclick="filterRequests('all')" id="tabAll">All</button>
+            <button class="tab-btn" onclick="filterRequests('pending')" id="tabPending">⏳ Pending</button>
+            <button class="tab-btn" onclick="filterRequests('approved')" id="tabApproved">✅ Approved</button>
+            <button class="tab-btn" onclick="filterRequests('rejected')" id="tabRejected">❌ Rejected</button>
         </div>
-        
-        <!-- ===== REQUESTS GRID ===== -->
+
+        <!-- REQUESTS GRID -->
         <?php if(mysqli_num_rows($result_requests) > 0): ?>
         <div class="requests-grid" id="requestsGrid">
             <?php while($request = mysqli_fetch_assoc($result_requests)): 
                 $days_remaining = $request['days_remaining'];
                 $is_urgent = ($days_remaining <= 2 && $days_remaining >= 0 && $request['request_status'] == 'approved');
                 
-                // Calculate child age
                 $age_days = floor((time() - strtotime($request['date_of_birth'])) / (60 * 60 * 24));
                 $age_years = floor($age_days / 365);
                 $age_months = floor(($age_days % 365) / 30);
                 
                 if($age_years > 0) {
-                    $age_text = $age_years . " year" . ($age_years > 1 ? "s" : "");
-                    if($age_months > 0) $age_text .= " " . $age_months . " month" . ($age_months > 1 ? "s" : "");
+                    $age_text = $age_years . " yr" . ($age_years > 1 ? "s" : "");
+                    if($age_months > 0) $age_text .= " " . $age_months . " mo";
                 } else {
                     $age_text = $age_months . " month" . ($age_months > 1 ? "s" : "");
                 }
             ?>
             <div class="request-card <?php echo $request['request_status']; ?>" data-status="<?php echo $request['request_status']; ?>">
+
                 <div class="request-header">
-                    <div class="child-avatar">
-                        <i class="fas fa-child"></i>
-                    </div>
+                    <div class="child-avatar">👶</div>
                     <span class="request-id">#<?php echo str_pad($request['request_id'], 5, '0', STR_PAD_LEFT); ?></span>
                 </div>
-                
-                <h3 class="child-name"><?php echo htmlspecialchars($request['child_name']); ?></h3>
-                <div class="child-age">
-                    <i class="fas fa-birthday-cake"></i>
-                    <?php echo $age_text; ?>
-                </div>
-                
+
+                <div class="child-name"><?php echo htmlspecialchars($request['child_name']); ?></div>
+                <div class="child-age">🎂 <?php echo $age_text; ?></div>
+
                 <div class="request-details">
                     <div class="detail-row">
-                        <span class="detail-label">
-                            <i class="fas fa-syringe"></i> Vaccine:
-                        </span>
+                        <span class="detail-label">💉 Vaccine</span>
                         <span class="detail-value">
                             <?php echo htmlspecialchars($request['vaccine_name']); ?>
                             <?php if($request['vaccine_code']): ?>
-                                <span style="font-family: monospace; background: #f1f5f9; padding: 3px 8px; border-radius: 5px; margin-left: 8px; font-size: 11px;">
-                                    <?php echo $request['vaccine_code']; ?>
-                                </span>
+                                <span class="vaccine-code"><?php echo $request['vaccine_code']; ?></span>
                             <?php endif; ?>
                         </span>
                     </div>
-                    
                     <div class="detail-row">
-                        <span class="detail-label">
-                            <i class="fas fa-hospital"></i> Hospital:
-                        </span>
+                        <span class="detail-label">🏥 Hospital</span>
                         <span class="detail-value">
                             <?php echo htmlspecialchars($request['hospital_name']); ?>
-                            <span style="display: block; font-size: 12px; color: #64748b;">
-                                <i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($request['hospital_city']); ?>
-                            </span>
+                            <span style="display:block;font-size:11px;color:#6b7280;">📍 <?php echo htmlspecialchars($request['hospital_city']); ?></span>
                         </span>
                     </div>
-                    
                     <div class="detail-row">
-                        <span class="detail-label">
-                            <i class="fas fa-calendar-alt"></i> Date:
-                        </span>
-                        <span class="detail-value">
-                            <?php echo date('d M, Y', strtotime($request['preferred_date'])); ?>
-                        </span>
+                        <span class="detail-label">📅 Date</span>
+                        <span class="detail-value"><?php echo date('d M, Y', strtotime($request['preferred_date'])); ?></span>
                     </div>
-                    
                     <div class="detail-row">
-                        <span class="detail-label">
-                            <i class="fas fa-clock"></i> Time:
-                        </span>
-                        <span class="detail-value">
-                            <?php echo date('h:i A', strtotime($request['preferred_time'])); ?>
-                        </span>
+                        <span class="detail-label">🕐 Time</span>
+                        <span class="detail-value"><?php echo date('h:i A', strtotime($request['preferred_time'])); ?></span>
                     </div>
-                    
                     <div class="detail-row">
-                        <span class="detail-label">
-                            <i class="fas fa-syringe"></i> Dose:
-                        </span>
+                        <span class="detail-label">💊 Dose</span>
                         <span class="detail-value">
-                            <span style="background: #667eea; color: white; padding: 4px 15px; border-radius: 30px; font-weight: 700;">
-                                Dose #<?php echo $request['dose_number']; ?>
-                            </span>
+                            <span class="dose-badge">Dose #<?php echo $request['dose_number']; ?></span>
                         </span>
                     </div>
                 </div>
-                
+
                 <?php if($request['request_status'] == 'approved'): ?>
-                <div style="margin-bottom: 20px;">
-                    <span class="days-remaining <?php echo $is_urgent ? 'urgent' : ''; ?>">
-                        <i class="fas fa-hourglass-half"></i>
-                        <?php 
-                        if($days_remaining < 0) {
-                            echo "Overdue by " . abs($days_remaining) . " days";
-                        } elseif($days_remaining == 0) {
-                            echo "Today!";
-                        } else {
-                            echo $days_remaining . " days remaining";
-                        }
-                        ?>
-                    </span>
+                <div class="days-remaining <?php echo $is_urgent ? 'urgent' : ''; ?>">
+                    ⏳
+                    <?php 
+                    if($days_remaining < 0) echo "Overdue by " . abs($days_remaining) . " days";
+                    elseif($days_remaining == 0) echo "Today!";
+                    else echo $days_remaining . " days remaining";
+                    ?>
                 </div>
                 <?php endif; ?>
-                
+
                 <div class="status-badge <?php echo $request['request_status']; ?>">
-                    <i class="fas 
-                        <?php 
-                        echo $request['request_status'] == 'pending' ? 'fa-clock' : 
-                            ($request['request_status'] == 'approved' ? 'fa-check-circle' : 'fa-times-circle'); 
-                        ?>">
-                    </i>
-                    <?php echo ucfirst($request['request_status']); ?>
+                    <?php
+                    $icon = $request['request_status'] == 'pending' ? '⏳' : ($request['request_status'] == 'approved' ? '✅' : '❌');
+                    echo $icon . ' ' . ucfirst($request['request_status']);
+                    ?>
                 </div>
-                
+
                 <?php if($request['admin_notes'] && $request['request_status'] != 'pending'): ?>
                 <div class="admin-notes">
-                    <strong><i class="fas fa-user-shield"></i> Admin Notes:</strong>
-                    <p style="margin-top: 8px;"><?php echo nl2br(htmlspecialchars($request['admin_notes'])); ?></p>
+                    <strong>🛡️ Admin Notes:</strong>
+                    <p style="margin-top:6px;"><?php echo nl2br(htmlspecialchars($request['admin_notes'])); ?></p>
                     <?php if($request['admin_name']): ?>
-                    <small style="color: #667eea;">- <?php echo $request['admin_name']; ?></small>
+                    <small>— <?php echo htmlspecialchars($request['admin_name']); ?></small>
                     <?php endif; ?>
                 </div>
                 <?php endif; ?>
-                
+
                 <div class="request-actions">
                     <a href="request_details.php?id=<?php echo $request['request_id']; ?>" class="btn btn-view">
-                        <i class="fas fa-eye"></i> View Details
+                        👁 View Details
                     </a>
-                    
                     <?php if($request['request_status'] == 'pending'): ?>
-                    <button class="btn btn-cancel" onclick="showCancelModal(<?php echo $request['request_id']; ?>, '<?php echo $request['child_name']; ?>')">
-                        <i class="fas fa-times"></i> Cancel
+                    <button class="btn btn-cancel-req" onclick="showCancelModal(<?php echo $request['request_id']; ?>, '<?php echo htmlspecialchars($request['child_name'], ENT_QUOTES); ?>')">
+                        ✕ Cancel
                     </button>
                     <?php else: ?>
-                    <button class="btn btn-cancel" disabled>
-                        <i class="fas fa-times"></i> Cancel
-                    </button>
+                    <button class="btn btn-cancel-req" disabled>✕ Cancel</button>
                     <?php endif; ?>
                 </div>
+
             </div>
             <?php endwhile; ?>
         </div>
-        
+
         <?php else: ?>
-        <!-- ===== EMPTY STATE ===== -->
-        <div class="empty-state animate__animated animate__fadeIn">
-            <i class="fas fa-calendar-times"></i>
+        <div class="empty-state">
+            <span>🗓️</span>
             <h3>No Appointment Requests Found</h3>
-            <p>You haven't submitted any appointment requests yet.<br>Book your child's vaccination now!</p>
-            <a href="book_appointment.php" class="btn-primary">
-                <i class="fas fa-calendar-plus me-2"></i> Book Appointment
-            </a>
+            <p>You haven't submitted any appointment requests yet. Book your child's vaccination now!</p>
+            <a href="book_appointment.php" class="btn-primary">📅 Book Appointment</a>
         </div>
         <?php endif; ?>
+
     </div>
-    
-    <!-- ===== CANCEL MODAL ===== -->
+
+    <!-- CANCEL MODAL -->
     <div class="modal-overlay" id="cancelModal">
         <div class="modal">
             <div class="modal-header">
-                <h3><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Cancel Request</h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <h3>⚠️ Cancel Request</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
             </div>
             <div class="modal-body">
-                <div class="modal-icon">
-                    <i class="fas fa-question"></i>
-                </div>
-                <h4 style="font-size: 22px; margin-bottom: 15px;">Are you sure?</h4>
-                <p style="color: #64748b; line-height: 1.8; margin-bottom: 10px;">
-                    You are about to cancel the appointment request for <strong id="cancelChildName"></strong>.
-                </p>
-                <p style="color: #ef4444; font-size: 14px;">
-                    <i class="fas fa-exclamation-circle"></i> This action cannot be undone.
-                </p>
+                <div class="modal-icon">❓</div>
+                <h4>Are you sure?</h4>
+                <p>You are about to cancel the appointment request for <strong id="cancelChildName"></strong>.</p>
+                <p class="warn-text">⚠️ This action cannot be undone.</p>
             </div>
             <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="closeModal()">
-                    <i class="fas fa-times"></i> No, Keep
-                </button>
-                <a href="#" id="cancelLink" class="btn btn-cancel" style="flex: 1;">
-                    <i class="fas fa-check"></i> Yes, Cancel
-                </a>
+                <button class="btn-modal-keep" onclick="closeModal()">✕ No, Keep</button>
+                <a href="#" id="cancelLink" class="btn-modal-cancel">✓ Yes, Cancel</a>
             </div>
         </div>
     </div>
-    
+
     <script>
-        // ===== FILTER REQUESTS =====
         function filterRequests(status) {
             const cards = document.querySelectorAll('.request-card');
-            const tabs = document.querySelectorAll('.tab-btn');
-            
-            // Update active tab
-            tabs.forEach(tab => tab.classList.remove('active'));
+            const tabs  = document.querySelectorAll('.tab-btn');
+
+            tabs.forEach(t => t.classList.remove('active'));
             document.getElementById('tab' + status.charAt(0).toUpperCase() + status.slice(1)).classList.add('active');
-            
-            // Filter cards
+
             cards.forEach(card => {
-                if(status === 'all') {
-                    card.style.display = 'block';
-                } else {
-                    if(card.dataset.status === status) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                }
+                card.style.display = (status === 'all' || card.dataset.status === status) ? 'block' : 'none';
             });
-            
-            // Show empty message if no cards visible
-            const visibleCards = Array.from(cards).filter(card => card.style.display !== 'none');
-            const emptyMessage = document.querySelector('.empty-state');
-            
-            if(visibleCards.length === 0 && document.querySelector('.requests-grid')) {
-                if(!document.getElementById('noResults')) {
-                    const noResults = document.createElement('div');
-                    noResults.id = 'noResults';
-                    noResults.className = 'empty-state';
-                    noResults.innerHTML = `
-                        <i class="fas fa-search"></i>
-                        <h3>No ${status} requests found</h3>
-                        <p>You don't have any ${status} appointment requests at the moment.</p>
-                    `;
-                    document.querySelector('.requests-grid').after(noResults);
+
+            const visible = Array.from(cards).filter(c => c.style.display !== 'none');
+            const existing = document.getElementById('noResults');
+            if(visible.length === 0 && document.querySelector('.requests-grid')) {
+                if(!existing) {
+                    const el = document.createElement('div');
+                    el.id = 'noResults';
+                    el.className = 'empty-state';
+                    el.innerHTML = `<span>🔍</span><h3>No ${status} requests</h3><p>You don't have any ${status} requests at the moment.</p>`;
+                    document.querySelector('.requests-grid').after(el);
                 }
-            } else if(document.getElementById('noResults')) {
-                document.getElementById('noResults').remove();
-            }
+            } else if(existing) { existing.remove(); }
         }
-        
-        // ===== CANCEL MODAL =====
+
         function showCancelModal(requestId, childName) {
-            document.getElementById('cancelChildName').innerHTML = childName;
+            document.getElementById('cancelChildName').textContent = childName;
             document.getElementById('cancelLink').href = 'cancel_request.php?id=' + requestId;
             document.getElementById('cancelModal').classList.add('active');
         }
-        
+
         function closeModal() {
             document.getElementById('cancelModal').classList.remove('active');
         }
-        
-        // ===== CLOSE MODAL WHEN CLICKING OUTSIDE =====
-        window.onclick = function(event) {
-            const modal = document.getElementById('cancelModal');
-            if(event.target === modal) {
-                closeModal();
-            }
+
+        window.onclick = function(e) {
+            if(e.target === document.getElementById('cancelModal')) closeModal();
         }
-        
-        // ===== AUTO REFRESH EVERY 30 SECONDS =====
-        setTimeout(() => {
-            location.reload();
-        }, 30000);
-        
-        // ===== ADD ANIMATION DELAYS =====
+
+        setTimeout(() => location.reload(), 30000);
+
         document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.request-card');
-            cards.forEach((card, index) => {
-                card.style.animationDelay = `${index * 0.1}s`;
-            });
-            
-            // Get status from URL
             const urlParams = new URLSearchParams(window.location.search);
             const status = urlParams.get('status');
-            if(status && ['pending', 'approved', 'rejected'].includes(status)) {
-                filterRequests(status);
-            }
+            if(status && ['pending','approved','rejected'].includes(status)) filterRequests(status);
         });
     </script>
 </body>
